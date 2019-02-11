@@ -1,0 +1,31 @@
+{
+  "name": "localizationeer.js",
+  "version": "1.0.0",
+  "description": "Tool to import localization strings from one Excel file to Android XML string files",
+  "main": "app.js",
+  "dependencies": {
+    "exceljs": "^1.7.0",
+    "fs": "0.0.1-security",
+    "xml2js": "^0.4.19"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndreLMPinto/Localizationeer.js.git"
+  },
+  "keywords": [
+    "excel",
+    "android",
+    "ios",
+    "localization"
+  ],
+  "author": "Andre Pinto",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AndreLMPinto/Localizationeer.js/issues"
+  },
+  "homepage": "https://github.com/AndreLMPinto/Localizationeer.js#readme"
+}
