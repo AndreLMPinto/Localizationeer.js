@@ -1,5 +1,5 @@
 exports.androidLanguageToCode = {
-    "English": [],
+    "English": [undefined],
     "Japanese": ["ja"],
     "German": ["de"],
     "French (France)": ["fr"],

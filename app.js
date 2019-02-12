@@ -19,12 +19,30 @@
 // -- string id to delete
 // -- delete translations only (false: delete string from english too, true)
 
-const Constants = require('./constants.js');
 const ExcelToAndroid = require('./excelToAndroid.js');
 
+var options = {
+    operation: 'excel2android',
+    idColumnIndex: 1,
+    englishColumnIndex: 2,
+    excelFileName: undefined,
+    xmlsFolderName: undefined
+}
+
 process.argv.forEach((val, index) => {
-    console.log(`${index}: ${val}`);
+    // 0: node
+    // 1: app.js
+    if(index > 1) {
+        var regex = new RegExp("^-(?<id>\\S*)=(?<val>.*)$");
+        var matches = regex.exec(val);
+        if(matches) {
+            options[matches.groups.id] = matches.groups.val;
+        }
+    }
 });
 
-var e2a = new ExcelToAndroid();
-e2a.readExcelAndApplyNewValues();
+if(options.operation == 'excel2android') {
+    console.log('Excel to Android xml files');
+    var e2a = new ExcelToAndroid();
+    e2a.readExcelAndApplyNewValues(options);
+}

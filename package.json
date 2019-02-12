@@ -5,8 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "exceljs": "^1.7.0",
-    "fs": "0.0.1-security",
-    "xml2js": "^0.4.19"
+    "fs": "0.0.1-security"
   },
   "devDependencies": {},
   "scripts": {
