@@ -10,6 +10,7 @@ module.exports = class ExcelToAndroid {
         this.englishColumnIndex = 2;
         this.excelFileName = undefined;
         this.xmlsFolderName = undefined;
+        this.identationSpaces = 4;
     }
 
     sanityze(text) {
@@ -22,6 +23,9 @@ module.exports = class ExcelToAndroid {
         }
         if(options.englishColumnIndex !== undefined) {
             this.englishColumnIndex = options.englishColumnIndex;
+        }
+        if (options.identationSpaces !== undefined) {
+            this.identationSpaces = options.identationSpaces;
         }
         if(options.excelFileName !== undefined) {
             this.excelFileName = options.excelFileName;
@@ -42,6 +46,7 @@ module.exports = class ExcelToAndroid {
 
         var $this = this;
         var workbook = new Excel.Workbook();
+        var promises = [];
         workbook.xlsx.readFile(this.excelFileName)
             .then(function() {
                 var worksheet = workbook.worksheets[0];
@@ -57,24 +62,33 @@ module.exports = class ExcelToAndroid {
                         for(var row = 2; row <= totalRows; row++) {
                             var id = worksheet.getCell(row, $this.idColumnIndex).text;
                             if(id) {
-                                var value = $this.sanityze(worksheet.getCell(row, col).text);
                                 if(values[id]) {
                                     throw new Error('Duplicate key detected "' + id + '". Please review your Excel file.')
                                 }
-                                values[id] = value;
+                                
+                                var value = $this.sanityze(worksheet.getCell(row, col).text);
+                                if (value) {
+                                    values[id] = value;
+                                }
                             }
                         }
                         // write all strings for one language to the correct strings.xml file 
                         if(Object.keys(values).length) {
                             for(var index in languageCodes) {
                                 var code = languageCodes[index];
-                                var fileName = Path.join($this.xmlsFolderName, "values" + (code ? "-" + code : "") + "\\strings.xml");
+                                var fileName = Path.join($this.xmlsFolderName, "values" + (code ? "-" + code : "") + Path.sep + "strings.xml");
                                 var languageAndCode = language + (code ? " (" + code + ")": "");
-                                $this.setValuesInXml(languageAndCode, values, fileName);
+                                promises.push($this.setValuesInXml(languageAndCode, values, fileName));
                             }
                         }
                     }
                 }
+
+                Promise.all(promises).then(function() {
+                    console.log('Finished');
+                }).catch(function (err) {
+                    console.log('Finished with error ' + err);
+                });
             })
             .catch(function(err) {
                 console.log(err);
@@ -82,38 +96,44 @@ module.exports = class ExcelToAndroid {
     }
 
     setValuesInXml(languageAndCode, values, fileName) {
-        fs.readFile(fileName, function(err, data) {
-            if(err) {
-                console.log(err);
-                return;
-            }
-            var xml = data.toString();
-            var changes = 0;
-            for(var id in values) {
-                var idFound = false;
-                var regex = new RegExp("\<string name=\"" + id + "\"\>(?<val>[\\s\\S]*?)\<\/string\>", "g");
-                var matches = regex.exec(xml);
-                if(matches) {
-                    if(matches.groups.val != values[id]) {
-                        xml = xml.replace(regex, "<string name=\"" + id + "\">" + values[id] + "</string>");
+        var $this = this;
+        return new Promise(function (resolve, reject) {
+            fs.readFile(fileName, function(err, data) {
+                if(err) {
+                    console.log(err);
+                    return;
+                }
+                var xml = data.toString();
+                var changes = 0;
+                for(var id in values) {
+                    var regex = new RegExp("\<string name=\"" + id + "\"\>([\\s\\S]*?)\<\/string\>", "g");
+                    var matches = regex.exec(xml);
+                    if(matches) {
+                        if(matches[1] != values[id]) {
+                            xml = xml.replace(regex, "<string name=\"" + id + "\">" + values[id] + "</string>");
+                            changes++;
+                        }
+                    } else {
+                        var stringElement = "<string name=\"" + id + "\">" + values[id] + "</string>\n</resources>";
+                        xml = xml.replace(/\<\/resources\>/, stringElement.padStart(stringElement.length + $this.identationSpaces));
                         changes++;
                     }
-                } else {
-                    xml = xml.replace(/\<\/resources\>/, "    <string name=\"" + id + "\">" + values[id] + "</string>\n</resources>");
-                    changes++;
                 }
-            }
-            if(changes) {
-                fs.writeFile(fileName, xml, function(err) {
-                    if(err) {
-                        console.log(err);
-                        return;
-                    }
-                    console.log(languageAndCode + ": " + changes);
-                });
-            } else {
-                console.log(languageAndCode + ": NONE");
-            }
+                if(changes) {
+                    fs.writeFile(fileName, xml, function(err) {
+                        if(err) {
+                            console.log(err);
+                            reject(err);
+                            return;
+                        }
+                        console.log(languageAndCode + ": " + changes);
+                        resolve();
+                    });
+                } else {
+                    console.log(languageAndCode + ": NONE");
+                    resolve();
+                }
+            });
         });
     }
 }
