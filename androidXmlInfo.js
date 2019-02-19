@@ -57,7 +57,7 @@ module.exports = class AndroidXmlInfo {
             if(!showMissingTranslation && !showFormatIssue) {
                 continue;
             }
-            log += (log ? '\n\n' : '\n') + stringData.getStringId();
+            log += (log ? '\n' : '') + stringData.getStringId();
             if(showMissingTranslation) {
                 var showMissing = false;
                 var showFound = false;
@@ -100,18 +100,16 @@ module.exports = class AndroidXmlInfo {
             if(showFormatIssue) {
                 log += '\nFormat issues (' + stringData.countFormatIssueCodes() + '): ' + stringData.getFormatCodesFormatted();
             }
-            console.log(log);
+            log += '\n';
         }
-        if(count) {
-            log = '\nString ids with issues: ' + count;
-            if(filterMissingStrings) {
-                log += '\nLanguage codes: ' + this.codes.length
-                    + '\nTips:'
-                    + '\n* Strings without English (en) are probably out of use.'
-                    + '\n* Strings that are only in English are probably awaiting for translation or not supposed to be translated.'
-                    + '\n  If the later is the case, consider adding "translatable=false" to it.'
-            }
-            console.log(log);
-        }
+        var summary = '\nString ids with issues: ' + count
+            + '\nLanguage codes: ' + this.codes.length
+            + '\nTips:'
+            + '\n* Strings without English (en) are probably out of use.'
+            + '\n* Strings that are only in English are probably awaiting for translation or not supposed to be translated.'
+            + '\n  If the later is the case, consider adding "translatable=false" to it.'
+            + '\n\n';
+
+        return summary + log;
     }
 }

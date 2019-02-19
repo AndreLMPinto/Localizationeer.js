@@ -7,6 +7,8 @@ module.exports = class AndroidXmlChecker {
         this.excelFileName = undefined;
         this.filterMissingStrings = true;
         this.filterFormatIssues = true;
+        this.ignoreFiles = [];
+        this.outputFileName = undefined;
     }
 
     validate(options) {
@@ -27,15 +29,26 @@ module.exports = class AndroidXmlChecker {
             this.filterMissingStrings = false;
         }
 
+        if(options.ignoreFiles) {
+            this.ignoreFiles = options.ignoreFiles.split(',');
+        }
+
+        if(options.output !== undefined) {
+            this.outputFileName = options.output;
+        }
         return true;
     }
 
     getFiles(code)
     {
+        var ignoreFiles = this.ignoreFiles;
         var path = Path.join(this.xmlsFolderName, "values" + (code ? "-" + code : "") + Path.sep);
         var files = [];
         fs.readdirSync(path)
-            .filter(file => {
+            .filter(file => { 
+                if(ignoreFiles.find(function(f) { return file === f })) {
+                    return false;
+                }
                 var ext = Path.extname(file);
                 return ext === '.xml';
             })
@@ -87,7 +100,12 @@ module.exports = class AndroidXmlChecker {
                 }
             }
         }
-        console.log('\nFiles read: ' + fileLimit + '\nString ids read: ' + stringCount);
-        info.validate(this.filterFormatIssues, this.filterMissingStrings);
+        var log = 'Android xml checker\n\nFiles read: ' + fileLimit + '\nString ids read: ' + stringCount;
+        log += info.validate(this.filterFormatIssues, this.filterMissingStrings);
+        console.log(log);
+        if(this.outputFileName) {
+            fs.writeFileSync(this.outputFileName, log);
+        }
+        console.log('Done');
     }
 }

@@ -23,26 +23,32 @@ const ExcelToAndroid = require('./excelToAndroid.js');
 const AndroidXmlChecker = require('./androidXmlChecker.js');
 
 var options = {
-    operation: 'excel2android',
+    operation: 'androidCheck',
     idColumnIndex: 1,
     englishColumnIndex: 2,
     excelFileName: undefined,
     xmlsFolderName: undefined,
-    identationSpaces: 4
+    identationSpaces: 4,
+    missingStrings: true,
+    formatIssues: true,
+    ignoreFiles: [],
+    output: undefined
 }
 
 if (process.argv.length < 3) {
     console.log('Wrong number of parameters'
         + '\nCommon usage: node app.js <args>'
         + '\n-operation=?             excel2android'
-        + '\n                         androidCheck'
+        + '\n                         androidCheck (default)'
         + '\n-excelFileName=?         /path/to/file.xls'
         + '\n-xmlsFolderName=?        /app/repo/app/src/main/res'
         + '\n-idColumnIndex=?         default to 1'
         + '\n-idEnglishColumnIndex=?  default to 2'
         + '\n-indentationSpaces=?     default to 4'
         + '\n-missingStrings=?        default to true'
-        + '\n-formatIssues=?          default to true');
+        + '\n-formatIssues=?          default to true'
+        + '\n-ignoreFiles=?           comma separated list of files'
+        + '\n-output=?                output file name');
 }
 
 process.argv.forEach((val, index) => {
