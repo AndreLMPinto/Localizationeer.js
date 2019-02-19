@@ -17,7 +17,7 @@ module.exports = class ExcelToAndroid {
         return text.trim().replace(/\'/g, "\\\'");
     }
 
-    readExcelAndApplyNewValues(options) {
+    validate(options) {
         if(options.idColumnIndex !== undefined) {
             this.idColumnIndex = options.idColumnIndex;
         }
@@ -36,27 +36,41 @@ module.exports = class ExcelToAndroid {
 
         if(this.excelFileName === undefined || !fs.existsSync(this.excelFileName)) {
             console.log('Please inform the path to the Excel file containing string ids and localized strings.');
-            return;
+            return false;
         }
 
         if(this.xmlsFolderName === undefined || !fs.existsSync(this.xmlsFolderName)) {
             console.log('Please inform the path to the "app/src/main/res" folder containing the values*/strings.xml files.');
+            return false;
+        }
+
+        return true;
+    }
+
+    readExcelAndApplyNewValues(options) {
+        var $this = this;
+        if(!$this.validate(options)) {
             return;
         }
 
-        var $this = this;
         var workbook = new Excel.Workbook();
-        var promises = [];
         workbook.xlsx.readFile(this.excelFileName)
             .then(function() {
                 var worksheet = workbook.worksheets[0];
+
+                if(worksheet.getCell(1, $this.englishColumnIndex).text != 'English') {
+                    throw new Error('Incorrect index for "English" color. Please review your Excel file.');
+                }
+
                 var totalRows = worksheet.rowCount;
                 var totalCols = worksheet.columnCount;
-
+                var promises = [];
                 for(var col = $this.englishColumnIndex; col < totalCols; col++) {
+                    // get the language name from the excel column title
                     var language = worksheet.getCell(1, col).text;
+                    // maps the language name to one or more language codes
                     var languageCodes = constants.androidLanguageToCode[language];
-                    if(languageCodes && languageCodes.length) {
+                    if(languageCodes) {
                         var values = {};
                         // read all strings for one language from the excel file
                         for(var row = 2; row <= totalRows; row++) {
@@ -65,7 +79,6 @@ module.exports = class ExcelToAndroid {
                                 if(values[id]) {
                                     throw new Error('Duplicate key detected "' + id + '". Please review your Excel file.')
                                 }
-                                
                                 var value = $this.sanityze(worksheet.getCell(row, col).text);
                                 if (value) {
                                     values[id] = value;

@@ -20,6 +20,7 @@
 // -- delete translations only (false: delete string from english too, true)
 
 const ExcelToAndroid = require('./excelToAndroid.js');
+const AndroidXmlChecker = require('./androidXmlChecker.js');
 
 var options = {
     operation: 'excel2android',
@@ -31,8 +32,17 @@ var options = {
 }
 
 if (process.argv.length < 3) {
-    console.log('Wrong number of parameters');
-    console.log('Common usage: node app.js -operation=excel2android -excelFileName=/path/to/file.xls -xmlsFolderName=/app/repo/app/src/main/res');
+    console.log('Wrong number of parameters'
+        + '\nCommon usage: node app.js <args>'
+        + '\n-operation=?             excel2android'
+        + '\n                         androidCheck'
+        + '\n-excelFileName=?         /path/to/file.xls'
+        + '\n-xmlsFolderName=?        /app/repo/app/src/main/res'
+        + '\n-idColumnIndex=?         default to 1'
+        + '\n-idEnglishColumnIndex=?  default to 2'
+        + '\n-indentationSpaces=?     default to 4'
+        + '\n-missingStrings=?        default to true'
+        + '\n-formatIssues=?          default to true');
 }
 
 process.argv.forEach((val, index) => {
@@ -51,4 +61,8 @@ if(options.operation == 'excel2android') {
     console.log('Excel to Android xml files');
     var e2a = new ExcelToAndroid();
     e2a.readExcelAndApplyNewValues(options);
+} else if(options.operation == 'androidCheck') {
+    console.log('Android xml checker');
+    var axc = new AndroidXmlChecker();
+    axc.validateXmls(options);
 }
