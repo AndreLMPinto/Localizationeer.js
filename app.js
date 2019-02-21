@@ -31,7 +31,7 @@ var options = {
     identationSpaces: 4,
     missingStrings: true,
     formatIssues: true,
-    ignoreFiles: [],
+    ignoreFiles: '',
     output: undefined
 }
 
@@ -47,8 +47,10 @@ if (process.argv.length < 3) {
         + '\n-indentationSpaces=?     default to 4'
         + '\n-missingStrings=?        default to true'
         + '\n-formatIssues=?          default to true'
+        + '\n-noDefaultOnly=?         default to false'
         + '\n-ignoreFiles=?           comma separated list of files'
         + '\n-output=?                output file name');
+    return;
 }
 
 process.argv.forEach((val, index) => {

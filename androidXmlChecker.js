@@ -7,6 +7,7 @@ module.exports = class AndroidXmlChecker {
         this.excelFileName = undefined;
         this.filterMissingStrings = true;
         this.filterFormatIssues = true;
+        this.filterNoDefaultOnly = false;
         this.ignoreFiles = [];
         this.outputFileName = undefined;
     }
@@ -27,6 +28,10 @@ module.exports = class AndroidXmlChecker {
 
         if(options.missingStrings === 'false') {
             this.filterMissingStrings = false;
+        }
+
+        if(options.noDefaultOnly === 'true') {
+            this.filterNoDefaultOnly = true;
         }
 
         if(options.ignoreFiles) {
@@ -58,28 +63,21 @@ module.exports = class AndroidXmlChecker {
         return files;
     }
 
-    validateXmls(options) {
-        if(!this.validate(options)) {
-            return;
-        }
-
+    readXmls() {
         var info = new AndroidXmlInfo();
         var codes = info.getCodes();
         var regex1 = new RegExp("\<string((?:\\s+\\w+=\"\\S*\")+)\\s*\>([\\s\\S]*?)\<\/string\>", "gm");
         var matches1 = undefined;
         var regex2 = new RegExp("\\s+(\\w+)=\"(\\w*?)\"", "gm");
         var matches2 = undefined;
-        var fileCount = 0;
         var fileLimit = 0;
-        var stringCount = 0;
         for(var indexCode in codes) {
             var code = codes[indexCode];
             var fileNames = this.getFiles(code);
             fileLimit += fileNames.length;
             for(var indexFileName in fileNames) {
                 var fileName = fileNames[indexFileName];
-                fileCount++;
-                process.stdout.write('Reading files: ' + fileCount + '/' + fileLimit + '\r');
+                info.addFileName(fileName);
                 var data = fs.readFileSync(fileName);
                 var xml = data.toString();
                 while((matches1 = regex1.exec(xml)) !== null) {
@@ -94,18 +92,28 @@ module.exports = class AndroidXmlChecker {
                             isTranslatable = matches2[2] == 'true';
                         }
                     }
-                    if(info.addSummary(id, code, text, isTranslatable, fileName)) {
-                        stringCount++;
-                    }                
+                    info.addSummary(id, code, text, isTranslatable, fileName);
                 }
+                process.stdout.write('Reading files: ' + info.countFileNames() + '/' + fileLimit + '\r');
             }
         }
-        var log = 'Android xml checker\n\nFiles read: ' + fileLimit + '\nString ids read: ' + stringCount;
-        log += info.validate(this.filterFormatIssues, this.filterMissingStrings);
-        console.log(log);
-        if(this.outputFileName) {
-            fs.writeFileSync(this.outputFileName, log);
+        return info;
+    }
+
+    validateXmls(options) {
+        if(!this.validate(options)) {
+            return;
         }
-        console.log('Done');
+
+        var info = this.readXmls();
+        info.validate();
+
+        var log = info.report(this.filterFormatIssues, this.filterMissingStrings, this.filterNoDefaultOnly);
+
+        if(this.outputFileName) {
+            fs.writeFileSync(this.outputFileName, 'Android xml checker\n\n' + log);
+        }
+
+        console.log('\n' + log + '\nDone');
     }
 }

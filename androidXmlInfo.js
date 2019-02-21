@@ -11,6 +11,21 @@ module.exports = class AndroidXmlInfo {
         }
         this.summary = [];
         this.error = undefined;
+        this.fileNames = [];
+    }
+
+    countStringIds() {
+        return this.summary.length;
+    }
+
+    countFileNames() {
+        return this.fileNames.length;
+    }
+
+    addFileName(fileName) {
+        if(this.fileNames.indexOf(fileName) < 0) {
+            this.fileNames.push(fileName);
+        }
     }
 
     getCodes() {
@@ -41,75 +56,84 @@ module.exports = class AndroidXmlInfo {
         return newId;
     }
 
-    validate(filterFormatIssues, filterMissingStrings) {
+    validate() {
+        for(var index = 0; index < this.summary.length; index++) {
+            var stringData = this.summary[index];
+            stringData.validate(this.codes);
+        }
+    }
+
+    report(filterFormatIssues, filterMissingStrings, filterNoDefaultOnly) {
         var count = 0;
         var log = '';
         for(var index = 0; index < this.summary.length; index++) {
             var stringData = this.summary[index];
-            stringData.validate(this.codes);
-
-            if(stringData.hasMissingTranslationCodes() || stringData.hasFormatIssueCodes()) {
-                count++;
-            }
 
             var showMissingTranslation = filterMissingStrings && stringData.hasMissingTranslationCodes();
             var showFormatIssue = filterFormatIssues && stringData.hasFormatIssueCodes();
             if(!showMissingTranslation && !showFormatIssue) {
                 continue;
             }
-            log += (log ? '\n' : '') + stringData.getStringId();
+
+            var sdLog = stringData.getStringId();
             if(showMissingTranslation) {
                 var showMissing = false;
                 var showFound = false;
                 if(stringData.hasDefaultLanguageData()) {
-                    log += '\n' + stringData.getDefaultLanguageData().getFileName();
+                    if(filterNoDefaultOnly) {
+                        continue;
+                    }
+                    sdLog += '\n' + stringData.getDefaultLanguageData().getFileName();
                 }
                 if(stringData.getIsTranslatable()) {
                     if(stringData.hasDefaultLanguageData()) {
                         if(!stringData.hasFoundTranslationCodes()) {
-                            log += '\nNot translated';
+                            sdLog += '\nNot translated';
                         } else if(stringData.hasMissingTranslationCodes()) {
-                            log += '\nMissing translations';
+                            sdLog += '\nMissing translations';
                             showMissing = true;
                         }
                     } else {
                         if(stringData.hasMissingTranslationCodes()) {
-                            log += '\nNo default, missing translations';
+                            sdLog += '\nNo default, missing translations';
                             showMissing = true;
                         } else if(stringData.hasFoundTranslationCodes()) {
-                            log += '\nNo default, found translations';
+                            sdLog += '\nNo default, found translations';
                             showFound = true;
                         }
                     }
                 } else {
-                    log += '\nNot translatable';
+                    sdLog += '\nNot translatable';
                     if(stringData.hasFoundTranslationCodes()) {
-                        log += ', found translations';
+                        sdLog += ', found translations';
                         showFound = true;
                     }
                 }
                 if(showMissing) {
-                    log += ' (' + stringData.countMissingTranslationCodes() + '): ' + stringData.getMissingTranslationCodesFormatted();
+                    sdLog += ' (' + stringData.countMissingTranslationCodes() + '): ' + stringData.getMissingTranslationCodesFormatted();
                 } else if(showFound) {
-                    log += ' (' + stringData.countFoundTranslationCodes() + '): ' + stringData.getFoundTranslationCodesFormatted();
+                    sdLog += ' (' + stringData.countFoundTranslationCodes() + '): ' + stringData.getFoundTranslationCodesFormatted();
                 }
                 if(stringData.hasDefaultLanguageData()) {
-                    log += '\n' + stringData.getDefaultLanguageData().getText();
+                    sdLog += '\n' + stringData.getDefaultLanguageData().getText();
                 }
             }
             if(showFormatIssue) {
-                log += '\nFormat issues (' + stringData.countFormatIssueCodes() + '): ' + stringData.getFormatCodesFormatted();
+                sdLog += '\nFormat issues (' + stringData.countFormatIssueCodes() + '): ' + stringData.getFormatCodesFormatted();
             }
-            log += '\n';
+            log += (log ? '\n' : '') + sdLog + '\n';
+            count++;
         }
-        var summary = '\nString ids with issues: ' + count
+
+        return 'Files read: ' + this.countFileNames() 
+            + '\nString ids read: ' + this.countStringIds()
+            + '\nString ids with issues: ' + count
             + '\nLanguage codes: ' + this.codes.length
             + '\nTips:'
             + '\n* Strings without English (en) are probably out of use.'
             + '\n* Strings that are only in English are probably awaiting for translation or not supposed to be translated.'
             + '\n  If the later is the case, consider adding "translatable=false" to it.'
-            + '\n\n';
-
-        return summary + log;
+            + '\n\n'
+            + log;
     }
 }
