@@ -1,14 +1,11 @@
-const constants = require('./constants.js');
-var Excel = require('exceljs');
+const ReadExcelFile = require('./excel/readExcelFile');
+let readExcelFile = new ReadExcelFile();
 var Path = require('path');
 var fs = require('fs');
 
 // The following code is based on the analogous class from the C# version of this project.
 module.exports = class ExcelToAndroid {
     constructor() {
-        this.idColumnIndex = 1;
-        this.englishColumnIndex = 2;
-        this.excelFileName = undefined;
         this.xmlsFolderName = undefined;
         this.identationSpaces = 4;
     }
@@ -18,25 +15,11 @@ module.exports = class ExcelToAndroid {
     }
 
     validate(options) {
-        if(options.idColumnIndex !== undefined) {
-            this.idColumnIndex = options.idColumnIndex;
-        }
-        if(options.englishColumnIndex !== undefined) {
-            this.englishColumnIndex = options.englishColumnIndex;
-        }
         if (options.identationSpaces !== undefined) {
             this.identationSpaces = options.identationSpaces;
         }
-        if(options.excelFileName !== undefined) {
-            this.excelFileName = options.excelFileName;
-        }
         if(options.xmlsFolderName !== undefined) {
             this.xmlsFolderName = options.xmlsFolderName;
-        }
-
-        if(this.excelFileName === undefined || !fs.existsSync(this.excelFileName)) {
-            console.log('Please inform the path to the Excel file containing string ids and localized strings.');
-            return false;
         }
 
         if(this.xmlsFolderName === undefined || !fs.existsSync(this.xmlsFolderName)) {
@@ -53,59 +36,37 @@ module.exports = class ExcelToAndroid {
             return;
         }
 
-        var workbook = new Excel.Workbook();
-        workbook.xlsx.readFile(this.excelFileName)
-            .then(function() {
-                var worksheet = workbook.worksheets[0];
+        var promises = [];
+        options.languageCodesPlatform = 'android';
 
-                if(worksheet.getCell(1, $this.englishColumnIndex).text != 'English') {
-                    throw new Error('Incorrect index for "English" color. Please review your Excel file.');
-                }
+        readExcelFile.readExcelAndApplyNewValues(options, function(err, results) {
+            if (err) {
+                console.log(err);
+                return;
+            }
 
-                var totalRows = worksheet.rowCount;
-                var totalCols = worksheet.columnCount;
-                var promises = [];
-                for(var col = $this.englishColumnIndex; col < totalCols; col++) {
-                    // get the language name from the excel column title
-                    var language = worksheet.getCell(1, col).text;
-                    // maps the language name to one or more language codes
-                    var languageCodes = constants.androidLanguageToCode[language];
-                    if(languageCodes) {
-                        var values = {};
-                        // read all strings for one language from the excel file
-                        for(var row = 2; row <= totalRows; row++) {
-                            var id = worksheet.getCell(row, $this.idColumnIndex).text;
-                            if(id) {
-                                if(values[id]) {
-                                    throw new Error('Duplicate key detected "' + id + '". Please review your Excel file.')
-                                }
-                                var value = $this.sanityze(worksheet.getCell(row, col).text);
-                                if (value) {
-                                    values[id] = value;
-                                }
-                            }
-                        }
-                        // write all strings for one language to the correct strings.xml file 
-                        if(Object.keys(values).length) {
-                            for(var index in languageCodes) {
-                                var code = languageCodes[index];
+            if (results) {
+                for (var resultsIndex in results) {
+                    let result = results[resultsIndex];
+                    if (result && Object.keys(result).length) {
+                            let language = result.language;
+                            for(var index in result.languageCodes) {
+                                var code = result.languageCodes[index];
                                 var fileName = Path.join($this.xmlsFolderName, "values" + (code ? "-" + code : "") + Path.sep + "strings.xml");
                                 var languageAndCode = language + (code ? " (" + code + ")": "");
-                                promises.push($this.setValuesInXml(languageAndCode, values, fileName));
+                                promises.push($this.setValuesInXml(languageAndCode, result.values, fileName));
                             }
-                        }
+                        
                     }
                 }
+            }
 
-                Promise.all(promises).then(function() {
-                    console.log('Finished');
-                }).catch(function (err) {
-                    console.log('Finished with error ' + err);
-                });
-            })
-            .catch(function(err) {
-                console.log(err);
+            Promise.all(promises).then(function() {
+                console.log('Finished');
+            }).catch(function (err) {
+                console.log('Finished with error ' + err);
             });
+        });
     }
 
     setValuesInXml(languageAndCode, values, fileName) {
