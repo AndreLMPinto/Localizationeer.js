@@ -72,6 +72,7 @@ module.exports = class ExcelToAndroid {
             fs.readFile(fileName, function (err, data) {
                 if (err) {
                     console.log(err);
+                    reject(err);
                     return;
                 }
                 var xml = data.toString();
