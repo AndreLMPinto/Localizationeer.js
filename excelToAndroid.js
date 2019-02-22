@@ -1,5 +1,5 @@
-const ReadExcelFile = require('./excel/readExcelFile');
-let readExcelFile = new ReadExcelFile();
+const ExcelFileReader = require('./excel/excelFileReader');
+let excelFileReader = new ExcelFileReader();
 var Path = require('path');
 var fs = require('fs');
 
@@ -39,7 +39,7 @@ module.exports = class ExcelToAndroid {
         var promises = [];
         options.languageCodesPlatform = 'android';
 
-        readExcelFile.readExcelAndApplyNewValues(options, function(err, results) {
+        excelFileReader.readExcelLanguageData(options, function(err, results) {
             if (err) {
                 console.log(err);
                 return;

@@ -3,7 +3,7 @@ const ExcelLanguageData = require('./excelLanguageData');
 var Excel = require('exceljs');
 var fs = require('fs');
 //This will read excel and send the values extracted through the callback
-module.exports = class ReadExcelFile {
+module.exports = class ExcelFileReader {
 
     constructor() {
         this.idColumnIndex = 1;
@@ -55,7 +55,7 @@ module.exports = class ReadExcelFile {
         return null;
     }
 
-    readExcelAndApplyNewValues(options, callback) {
+    readExcelLanguageData(options, callback) {
         var $this = this;
         if (!$this.validate(options)) {
             return;
