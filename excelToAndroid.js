@@ -18,11 +18,11 @@ module.exports = class ExcelToAndroid {
         if (options.identationSpaces !== undefined) {
             this.identationSpaces = options.identationSpaces;
         }
-        if(options.xmlsFolderName !== undefined) {
+        if (options.xmlsFolderName !== undefined) {
             this.xmlsFolderName = options.xmlsFolderName;
         }
 
-        if(this.xmlsFolderName === undefined || !fs.existsSync(this.xmlsFolderName)) {
+        if (this.xmlsFolderName === undefined || !fs.existsSync(this.xmlsFolderName)) {
             console.log('Please inform the path to the "app/src/main/res" folder containing the values*/strings.xml files.');
             return false;
         }
@@ -32,14 +32,14 @@ module.exports = class ExcelToAndroid {
 
     readExcelAndApplyNewValues(options) {
         var $this = this;
-        if(!$this.validate(options)) {
+        if (!$this.validate(options)) {
             return;
         }
 
         var promises = [];
         options.languageCodesPlatform = 'android';
 
-        excelFileReader.readExcelLanguageData(options, function(err, results) {
+        excelFileReader.readExcelLanguageData(options, function (err, results) {
             if (err) {
                 console.log(err);
                 return;
@@ -47,21 +47,18 @@ module.exports = class ExcelToAndroid {
 
             if (results) {
                 for (var resultsIndex in results) {
-                    let result = results[resultsIndex];
-                    if (result && Object.keys(result).length) {
-                            let language = result.language;
-                            for(var index in result.languageCodes) {
-                                var code = result.languageCodes[index];
-                                var fileName = Path.join($this.xmlsFolderName, "values" + (code ? "-" + code : "") + Path.sep + "strings.xml");
-                                var languageAndCode = language + (code ? " (" + code + ")": "");
-                                promises.push($this.setValuesInXml(languageAndCode, result.values, fileName));
-                            }
-                        
+                    let excelLanguageData = results[resultsIndex];
+                    let language = excelLanguageData.language;
+                    for (var index in excelLanguageData.languageCodes) {
+                        var code = excelLanguageData.languageCodes[index];
+                        var fileName = Path.join($this.xmlsFolderName, "values" + (code ? "-" + code : "") + Path.sep + "strings.xml");
+                        var languageAndCode = language + (code ? " (" + code + ")" : "");
+                        promises.push($this.setValuesInXml(languageAndCode, excelLanguageData.values, fileName));
                     }
                 }
             }
 
-            Promise.all(promises).then(function() {
+            Promise.all(promises).then(function () {
                 console.log('Finished');
             }).catch(function (err) {
                 console.log('Finished with error ' + err);
@@ -72,18 +69,18 @@ module.exports = class ExcelToAndroid {
     setValuesInXml(languageAndCode, values, fileName) {
         var $this = this;
         return new Promise(function (resolve, reject) {
-            fs.readFile(fileName, function(err, data) {
-                if(err) {
+            fs.readFile(fileName, function (err, data) {
+                if (err) {
                     console.log(err);
                     return;
                 }
                 var xml = data.toString();
                 var changes = 0;
-                for(var id in values) {
+                for (var id in values) {
                     var regex = new RegExp("\<string name=\"" + id + "\"\>([\\s\\S]*?)\<\/string\>", "g");
                     var matches = regex.exec(xml);
-                    if(matches) {
-                        if(matches[1] != values[id]) {
+                    if (matches) {
+                        if (matches[1] != values[id]) {
                             xml = xml.replace(regex, "<string name=\"" + id + "\">" + values[id] + "</string>");
                             changes++;
                         }
@@ -93,9 +90,9 @@ module.exports = class ExcelToAndroid {
                         changes++;
                     }
                 }
-                if(changes) {
-                    fs.writeFile(fileName, xml, function(err) {
-                        if(err) {
+                if (changes) {
+                    fs.writeFile(fileName, xml, function (err) {
+                        if (err) {
                             console.log(err);
                             reject(err);
                             return;

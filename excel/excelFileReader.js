@@ -47,7 +47,7 @@ module.exports = class ExcelFileReader {
     mapLanguageToCodes(language) {
         if (this.languageCodesPlatform === 'android') {
             return constants.androidLanguageToCode[language];
-        } 
+        }
         if (this.languageCodesPlatform === 'ios') {
             return constants.iosLanguageToCode[language];
         }
