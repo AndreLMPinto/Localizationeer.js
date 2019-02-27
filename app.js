@@ -21,6 +21,7 @@
 
 const ExcelToAndroid = require('./excelToAndroid.js');
 const AndroidXmlChecker = require('./androidXmlChecker.js');
+const ExcelToiOS = require('./excelToiOS');
 
 var options = {
     operation: 'androidCheck',
@@ -73,4 +74,8 @@ if(options.operation == 'excel2android') {
     console.log('Android xml checker');
     var axc = new AndroidXmlChecker();
     axc.validateXmls(options);
+} else if(options.operation == 'excel2ios') {
+    console.log('Excel to iOS xliff files');
+    let e2iOS = new ExcelToiOS();
+    e2iOS.readExcelAndApplyNewValues(options);
 }
