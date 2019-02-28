@@ -87,6 +87,20 @@ module.exports = class ExcelToiOS {
         return 0;
     }
 
+    parseStringFormatting(value) {
+        var regex = new RegExp("(\\%\\d\\$s)|(\\%s)","g");
+        let matches = value.match(regex);
+        if (matches) {
+            for (var matchIndex in matches) {
+                if (!isNaN(matchIndex) && matches[matchIndex]) {
+                    let match = matches[matchIndex].replace('s','@');
+                    value = value.replace(matches[matchIndex], match);
+                }
+            }
+        }
+        return value;
+    }
+
     setValuesInXml(languageAndCode, values, fileName) {
         var $this = this;
         return new Promise(function (resolve, reject) {
@@ -103,7 +117,9 @@ module.exports = class ExcelToiOS {
 
                     var changes = 0;
                     for (var id in values) {
-                        changes += $this.findAndReplaceInXliff(parsedXliff, id, values[id]);
+                        let parsedValue = $this.parseStringFormatting(values[id]);
+                        let parsedId = $this.parseStringFormatting(id);
+                        changes += $this.findAndReplaceInXliff(parsedXliff, parsedId, parsedValue);
                     }
                     if (changes) {
                         jsToXliff12(parsedXliff, {}, function (parseXliffError, modifiedXliff) {
