@@ -69,6 +69,12 @@ module.exports = class ExcelToAndroid {
     setValuesInXml(languageAndCode, values, fileName) {
         var $this = this;
         return new Promise(function (resolve, reject) {
+            if (!fs.existsSync(fileName)) {
+                console.log('File ' + fileName + ' not found');
+                reject(new Error('File ' + fileName + ' not found'));
+                return;
+            }
+
             fs.readFile(fileName, function (err, data) {
                 if (err) {
                     console.log(err);

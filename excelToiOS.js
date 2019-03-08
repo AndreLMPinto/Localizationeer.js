@@ -40,6 +40,7 @@ module.exports = class ExcelToiOS {
 
         var promises = [];
         options.languageCodesPlatform = 'ios';
+        options.idColumnIndex = options.englishColumnIndex;
 
         excelFileReader.readExcelLanguageData(options, function (err, results) {
             if (err) {
@@ -104,6 +105,12 @@ module.exports = class ExcelToiOS {
     setValuesInXml(languageAndCode, values, fileName) {
         var $this = this;
         return new Promise(function (resolve, reject) {
+            if (!fs.existsSync(fileName)) {
+                console.log('File ' + fileName + ' not found');
+                reject(new Error('File ' + fileName + ' not found'));
+                return;
+            }
+            
             fs.readFile(fileName, function (err, data) {
                 if (err) {
                     console.log(err);
@@ -113,7 +120,6 @@ module.exports = class ExcelToiOS {
                 var xliff = data.toString();
                 try {
                     let parsedXliff = xliff12ToJs(xliff);
-                    console.log(parsedXliff.toString());
 
                     var changes = 0;
                     for (var id in values) {
