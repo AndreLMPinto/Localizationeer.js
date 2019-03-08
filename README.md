@@ -41,7 +41,13 @@ After that just run:
 - First column is for the string ids (Optional for iOS).
 - Second column is for the text in English (This column will be used as <source> to be matched in xliff files).
 - Remaining columns are for the strings in other languages according to the language in the first line.
-- You can add more lines with your own strings (as long as they are present in xliff files) or more columns if you need more languages, as long as you add the corresponding language name to language codes in the source.
+- You can add more lines with your own strings (as long as they are present in xliff files) or more columns if you need more languages (as long as you add the corresponding language name to language codes in the source and the xliff file exists).
+- It is still needed to export the xliff files from Xcode to have it running correctly.
+- The process would be: 
+  1. Get the Excel file with the translations;
+  2. Export the xliff files from Xcode with the languages supported;
+  3. Run the tool (it will update the xliff files with the translations);
+  4. Import the xliff back to the app with Xcode.
 
 - [x] Read strings and translations from Excel file.
 - [ ] Read from CSV file.
