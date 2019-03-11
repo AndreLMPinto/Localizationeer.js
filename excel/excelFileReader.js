@@ -2,6 +2,8 @@ const constants = require('../constants');
 const ExcelLanguageData = require('./excelLanguageData');
 var Excel = require('exceljs');
 var fs = require('fs');
+var Path = require('path');
+
 //This will read excel and send the values extracted through the callback
 module.exports = class ExcelFileReader {
 
@@ -62,7 +64,25 @@ module.exports = class ExcelFileReader {
         }
 
         var workbook = new Excel.Workbook();
-        workbook.xlsx.readFile($this.excelFileName)
+        var reader = workbook.xlsx;
+        var readerOptions = null;
+        var ext = Path.extname($this.excelFileName);
+        if(ext === '.csv') {
+            reader = workbook.csv;
+            readerOptions = {
+                headers: false,
+                ignoreEmpty: true,
+                delimiter: ';',
+                quote: '"',
+                escape: '"',
+                trim: true,
+                comment: '#',
+                map: function(value, index) {
+                    return value;
+                }
+            };
+        }
+        reader.readFile($this.excelFileName, readerOptions)
             .then(function () {
                 var worksheet = workbook.worksheets[0];
 

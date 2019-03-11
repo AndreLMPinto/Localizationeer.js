@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // options and arguments:
 // - excel to android xml files
 // -- the app/src/main/res folder which contains the values*/strings.xml files
@@ -39,10 +41,11 @@ var options = {
 if (process.argv.length < 3) {
     console.log('Wrong number of parameters'
         + '\nCommon usage: node app.js <args>'
+        + '\nor, when properly installed: loca <args>'
         + '\n-operation=?             excel2android'
         + '\n                         excel2ios'
         + '\n                         androidCheck (default)'
-        + '\n-excelFileName=?         /path/to/file.xls'
+        + '\n-excelFileName=?         /path/to/file.xls (or file.csv with ";" as separators)'
         + '\n-xmlsFolderName=?        /app/repo/app/src/main/res'
         + '\n-idColumnIndex=?         default to 1'
         + '\n-idEnglishColumnIndex=?  default to 2'
