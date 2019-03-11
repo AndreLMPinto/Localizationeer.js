@@ -1,8 +1,11 @@
 {
-  "name": "localizationeer.js",
+  "name": "localizationeer",
   "version": "1.0.0",
   "description": "Tool to import localization strings from one Excel file to Android XML string files",
   "main": "app.js",
+  "bin": {
+    "loca": "app.js"
+  },
   "dependencies": {
     "exceljs": "^1.7.0",
     "fs": "0.0.1-security",
