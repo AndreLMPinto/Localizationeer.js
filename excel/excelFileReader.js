@@ -93,7 +93,7 @@ module.exports = class ExcelFileReader {
                 var totalRows = worksheet.rowCount;
                 var totalCols = worksheet.columnCount;
                 var results = [];
-                for (var col = $this.englishColumnIndex; col < totalCols; col++) {
+                for (var col = $this.englishColumnIndex; col <= totalCols; col++) {
                     // get the language name from the excel column title
                     var language = worksheet.getCell(1, col).text;
                     // maps the language name to one or more language codes
