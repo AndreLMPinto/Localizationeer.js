@@ -4,8 +4,8 @@ let spawn = require('child_process').spawn;
 /*
 xcodebuild 
 -exportLocalizations 
--localizationPath ./localizations/sprocket/ 
--project Sprocket/Sprocket.xcodeproj 
+-localizationPath ./localizations/path/to/be/exported 
+-project MyApp/MyApp.xcodeproj 
 -exportLanguage pt-BR
 */
 function runXcodeBuildExport(langCode, options) {
