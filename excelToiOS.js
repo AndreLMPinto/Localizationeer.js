@@ -5,6 +5,9 @@ var fs = require('fs');
 const xliff12ToJs = require('xliff/xliff12ToJs');
 const jsToXliff12 = require('xliff/jsToXliff12');
 
+const XLIFF_SUFFIX = '.xliff';
+const XCLOC_SUFFIX = '.xcloc';
+
 // The following code is based on the analogous class from the C# version of this project.
 module.exports = class ExcelToiOS {
     constructor() {
@@ -54,9 +57,9 @@ module.exports = class ExcelToiOS {
                     let language = excelLanguageData.language;
                     for (var index in excelLanguageData.languageCodes) {
                         var code = excelLanguageData.languageCodes[index];
-                        var fileName = Path.join($this.xmlsFolderName, (code ? code : "") + ".xliff");
+                        var fileName = Path.join($this.xmlsFolderName, (code ? code : ""));
                         var languageAndCode = language + (code ? " (" + code + ")" : "");
-                        promises.push($this.setValuesInXml(languageAndCode, excelLanguageData.values, fileName));
+                        promises.push($this.setValuesInXml(languageAndCode, excelLanguageData.values, fileName, code));
                     }
                 }
             }
@@ -102,13 +105,19 @@ module.exports = class ExcelToiOS {
         return value;
     }
 
-    setValuesInXml(languageAndCode, values, fileName) {
+    setValuesInXml(languageAndCode, values, fileName, code) {
         var $this = this;
         return new Promise(function (resolve, reject) {
-            if (!fs.existsSync(fileName)) {
-                console.log('File ' + fileName + ' not found');
-                reject(new Error('File ' + fileName + ' not found'));
-                return;
+            if (!fs.existsSync(fileName + XLIFF_SUFFIX)) {
+                if (fs.existsSync(fileName + XCLOC_SUFFIX)) {
+                    fileName = fileName + XCLOC_SUFFIX + '/Localized\ Contents/' + code + XLIFF_SUFFIX;
+                } else {
+                    console.log('File ' + fileName + ' not found');
+                    reject(new Error('File ' + fileName + ' not found'));
+                    return;
+                }
+            } else {
+                fileName = fileName + XLIFF_SUFFIX;
             }
             
             fs.readFile(fileName, function (err, data) {

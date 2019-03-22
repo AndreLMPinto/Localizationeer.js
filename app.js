@@ -24,6 +24,7 @@
 const ExcelToAndroid = require('./excelToAndroid.js');
 const AndroidXmlChecker = require('./androidXmlChecker.js');
 const ExcelToiOS = require('./excelToiOS');
+const ExportXliff = require('./exportXliffFromXcode');
 
 var options = {
     operation: 'androidCheck',
@@ -35,7 +36,9 @@ var options = {
     missingStrings: true,
     formatIssues: true,
     ignoreFiles: '',
-    output: undefined
+    output: undefined,
+    localizationPath: undefined,
+    xcodeProjPath: undefined
 }
 
 if (process.argv.length < 3) {
@@ -44,6 +47,7 @@ if (process.argv.length < 3) {
         + '\nor, when properly installed: loca <args>'
         + '\n-operation=?             excel2android'
         + '\n                         excel2ios'
+        + '\n                         exportXliff'
         + '\n                         androidCheck (default)'
         + '\n-excelFileName=?         /path/to/file.xls (or file.csv with ";" as separators)'
         + '\n-xmlsFolderName=?        /app/repo/app/src/main/res'
@@ -54,7 +58,9 @@ if (process.argv.length < 3) {
         + '\n-formatIssues=?          default to true'
         + '\n-noDefaultOnly=?         default to false'
         + '\n-ignoreFiles=?           comma separated list of files'
-        + '\n-output=?                output file name');
+        + '\n-output=?                output file name'
+        + '\n-localizationPath=?      /Path/to/where/it/will/export/xliffs'
+        + '\n-xcodeProjPath=?         /Path/to/where/the/xcodeproj/is/App.xcodeproj');
     return;
 }
 
@@ -82,4 +88,7 @@ if(options.operation == 'excel2android') {
     console.log('Excel to iOS xliff files');
     let e2iOS = new ExcelToiOS();
     e2iOS.readExcelAndApplyNewValues(options);
+} else if (options.operation == 'exportXliff') {
+    console.log('Export Xliff files from Xcode');
+    ExportXliff.exportXliffFromXcode(options);
 }

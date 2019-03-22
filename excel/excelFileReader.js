@@ -15,7 +15,7 @@ module.exports = class ExcelFileReader {
     }
 
     sanityze(text) {
-        return text.trim().replace(/\'/g, "\\\'");
+        return text.trim().replace(/\'/g, "\\\'").replace(/"|"/g, "\\\"").replace(/'|'/g, "\\\'");
     }
 
     validate(options) {
