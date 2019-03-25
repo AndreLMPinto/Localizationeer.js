@@ -84,11 +84,13 @@ module.exports = class ExcelToAndroid {
                 var xml = data.toString();
                 var changes = 0;
                 for (var id in values) {
-                    var regex = new RegExp("\<string name=\"" + id + "\"\>([\\s\\S]*?)\<\/string\>", "g");
+                    var regex = new RegExp("\<string[^\>]*name=\"" + id + "\"[^\>]*\>([\\s\\S]*?)\<\/string\>", "g");
                     var matches = regex.exec(xml);
                     if (matches) {
                         if (matches[1] != values[id]) {
-                            xml = xml.replace(regex, "<string name=\"" + id + "\">" + values[id] + "</string>");
+                            var stringElement = matches[0];
+                            stringElement = stringElement.replace(">" + matches[1] + "</", ">" + values[id] + "</");
+                            xml = xml.replace(regex, stringElement);
                             changes++;
                         }
                     } else {

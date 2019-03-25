@@ -35,6 +35,21 @@ After that just run:
 - [x] Configurable column index for string ids.
 - [x] Configurable column index for text in English.
 
+Example 1: Import strings from a xml file.
+> node app.js -operation=excel2android -excelFileName=/your/excel/file.xslx -xmlsFolderName=/your/app/src/main/res
+
+Example 2: Import strings from a csv file.
+> node app.js -operation=excel2android -excelFileName=/your/csv/file.csv -xmlsFolderName=/your/app/src/main/res
+
+To inform the column index for the string id use
+> -idColumnIndex=1
+
+To inform the column index for the text in English use
+> -idEnglishColumnIndex=2
+
+To inform the number of white spaces used for xml indentation use
+> -indentationSpaces=4
+
 ## Excel to iOS
 - The input file is an Excel or CSV. See example folder for the example.xlsx and example.csv input files.
 - First line have the names of the languages, which are mapped to one or more language codes (it is very important that the names of the languages match the ones in the source).
@@ -58,6 +73,41 @@ After that just run:
 ## Check Android XML files
 - [x] List missing translations: string id exists for English but not for one or more of the other languages.
 - [x] List issues on formattable strings: string in English has formatting placeholders (%s, %1$s, etc) but not for one or more of the other languages.
+- [x] Filter listings: without default (no English), without translations (only English), format issues.
 - [x] Ignore list of files.
 - [x] Report to a file.
-- [ ] Ability to remove a string id completely or only the translations.
+- [x] Ability to remove a string id completely or only the translations.
+- [x] Ability to clone a string id.
+
+Example 1: List all issues (missing translations, formatting issues).
+> node app.js -operation=androidCheck -xmlsFolderName=/your/app/src/main/res
+
+To ignore some xml files (usually files from packages you don't want to localize) use
+> -ignoreFiles=package1.xml,package2.xml,attrs.xml,dimens.xml
+
+To export to a file use
+> -output=output.txt
+
+To list only missing translations use
+> -formatIssues=false
+
+To list only formatting issues use
+> -missingStrings=false
+
+To list only string ids without default (English) text use
+> -noDefaultOnly=true
+
+To list only string id without translations use
+> -notTranslatedOnly=true
+
+Example 2: Delete a string id from all xmls.
+> node app.js -operation=androidTools -xmlsFolderName=/your/app/src/main/res -paramAction=delete -paramId=stringid
+
+To keep the default string (English) use
+> -paramKeepDefault=true
+
+Example 3: Duplicate a string id in all possible xmls.
+> node app.js -operation=androidTools -xmlsFolderName=/your/app/src/main/res -paramAction=clone -paramSource=sourceid -paramTarget=targetid
+
+To overwrite existing target strings use
+> -paramForce=true
