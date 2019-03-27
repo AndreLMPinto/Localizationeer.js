@@ -28,6 +28,12 @@ const ExportXliff = require('./exportXliffFromXcode');
 
 var options = {
     operation: 'androidCheck',
+    paramAction: undefined,
+    paramId: undefined,
+    paramSource: undefined,
+    paramTarget: undefined,
+    paramForce: false,
+    paramKeepDefault: false,
     idColumnIndex: 1,
     englishColumnIndex: 2,
     excelFileName: undefined,
@@ -49,6 +55,14 @@ if (process.argv.length < 3) {
         + '\n                         excel2ios'
         + '\n                         exportXliff'
         + '\n                         androidCheck (default)'
+        + '\n                         androidTools'
+        + '\n-paramAction=?           delete'
+        + '\n                         clone'
+        + '\n-paramId=?               string id'
+        + '\n-paramSource=?           source string id'
+        + '\n-paramTarget=?           target string id'
+        + '\n-paramForce=?            default to false'
+        + '\n-paramKeepDefault=?      default to false'
         + '\n-excelFileName=?         /path/to/file.xls (or file.csv with ";" as separators)'
         + '\n-xmlsFolderName=?        /app/repo/app/src/main/res'
         + '\n-idColumnIndex=?         default to 1'
@@ -57,6 +71,7 @@ if (process.argv.length < 3) {
         + '\n-missingStrings=?        default to true'
         + '\n-formatIssues=?          default to true'
         + '\n-noDefaultOnly=?         default to false'
+        + '\n-notTranslatedOnly=?     default to false'
         + '\n-ignoreFiles=?           comma separated list of files'
         + '\n-output=?                output file name'
         + '\n-localizationPath=?      /Path/to/where/it/will/export/xliffs'
@@ -84,6 +99,9 @@ if(options.operation == 'excel2android') {
     console.log('Android xml checker');
     var axc = new AndroidXmlChecker();
     axc.validateXmls(options);
+} else if(options.operation == 'androidTools') {
+    var axc = new AndroidXmlChecker();
+    axc.executeAction(options);
 } else if(options.operation == 'excel2ios') {
     console.log('Excel to iOS xliff files');
     let e2iOS = new ExcelToiOS();

@@ -63,14 +63,14 @@ module.exports = class AndroidXmlInfo {
         }
     }
 
-    report(filterFormatIssues, filterMissingStrings, filterNoDefaultOnly) {
+    report(filterFormatIssues, filterMissingStrings, filterNoDefaultOnly, filterNotTranslatedOnly) {
         var count = 0;
         var log = '';
         for(var index = 0; index < this.summary.length; index++) {
             var stringData = this.summary[index];
 
-            var showMissingTranslation = filterMissingStrings && stringData.hasMissingTranslationCodes();
-            var showFormatIssue = filterFormatIssues && stringData.hasFormatIssueCodes();
+            var showMissingTranslation = (filterMissingStrings || filterNoDefaultOnly || filterNotTranslatedOnly) && stringData.hasMissingTranslationCodes();
+            var showFormatIssue = filterFormatIssues && !(filterNoDefaultOnly || filterNotTranslatedOnly) && stringData.hasFormatIssueCodes();
             if(!showMissingTranslation && !showFormatIssue) {
                 continue;
             }
@@ -83,18 +83,23 @@ module.exports = class AndroidXmlInfo {
                     if(filterNoDefaultOnly) {
                         continue;
                     }
+                    if(filterNotTranslatedOnly && stringData.hasFoundTranslationCodes()) {
+                        continue;
+                    }
                     sdLog += '\n' + stringData.getDefaultLanguageData().getFileName();
                 }
                 if(stringData.getIsTranslatable()) {
                     if(stringData.hasDefaultLanguageData()) {
                         if(!stringData.hasFoundTranslationCodes()) {
                             sdLog += '\nNot translated';
-                        } else if(stringData.hasMissingTranslationCodes()) {
+                        } else if(stringData.hasMissingTranslationCodes() && !filterNotTranslatedOnly) {
                             sdLog += '\nMissing translations';
                             showMissing = true;
                         }
                     } else {
-                        if(stringData.hasMissingTranslationCodes()) {
+                        if(filterNotTranslatedOnly) {
+                            continue;
+                        } else if(stringData.hasMissingTranslationCodes()) {
                             sdLog += '\nNo default, missing translations';
                             showMissing = true;
                         } else if(stringData.hasFoundTranslationCodes()) {
@@ -103,6 +108,9 @@ module.exports = class AndroidXmlInfo {
                         }
                     }
                 } else {
+                    if(filterNotTranslatedOnly) {
+                        continue;
+                    }
                     sdLog += '\nNot translatable';
                     if(stringData.hasFoundTranslationCodes()) {
                         sdLog += ', found translations';
