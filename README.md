@@ -78,6 +78,7 @@ To inform the number of white spaces used for xml indentation use
 - [x] Report to a file.
 - [x] Ability to remove a string id completely or only the translations.
 - [x] Ability to clone a string id.
+- [x] Ability to join 2 or more string ids into one.
 
 Example 1: List all issues (missing translations, formatting issues).
 > node app.js -operation=androidCheck -xmlsFolderName=/your/app/src/main/res
@@ -111,3 +112,6 @@ Example 3: Duplicate a string id in all possible xmls.
 
 To overwrite existing target strings use
 > -paramForce=true
+
+Example 4: Join 2 string ids into one.
+> node app.js -operation=androidTools -xmlsFolderName=/your/app/src/main/res -paramAction=join -paramSource=id1,id2 -paramTarget=id1 -paramSeparator=\\n
