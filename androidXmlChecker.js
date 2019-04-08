@@ -26,6 +26,7 @@ module.exports = class AndroidXmlChecker {
         this.paramForce = false;
         this.paramKeepDefault = false;
         this.identationSpaces = 4;
+        this.paramSeparator = undefined;
     }
 
     validate(options) {
@@ -91,6 +92,28 @@ module.exports = class AndroidXmlChecker {
                     }
                     if(options.paramForce  === 'true') {
                         this.paramForce = true;
+                    }
+                    break;
+                case 'join':
+                    this.paramSource = [];
+                    if (options.paramSource !== undefined) {
+                        this.paramSource = options.paramSource.split(',');
+                    }
+                    if (!Array.isArray(this.paramSource) || this.paramSource < 2) {
+                        console.log('Please inform a comma separated list of string ids (paramSource) to be joined.');
+                        return false;
+                    }
+                    if (options.paramTarget !== undefined) {
+                        this.paramTarget = options.paramTarget;
+                    } else {
+                        console.log('Please inform the string id (paramTarget) of the destination of the joined string.');
+                        return false;
+                    }
+                    if (options.paramSeparator !== undefined) {
+                        this.paramSeparator = options.paramSeparator;
+                    } else {
+                        console.log('Please inform a string separator (paramSeparator) to be inserted between the joined strings.')
+                        return false;
                     }
                     break;
             }
@@ -225,8 +248,49 @@ module.exports = class AndroidXmlChecker {
                         }
                     } else {
                         target = target + '\n</resources>';
-                        regex = new RegExp(regexCloseResources, regexModifierGlobal);
                         xml = xml.replace(regexCloseResources, target.padStart(target.length + $this.identationSpaces));
+                    }
+                    fs.writeFile(fileName, xml, function (err) {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve(1);
+                    });
+                } else {
+                    resolve(0);
+                }
+            });
+        });
+    }
+
+    join(fileName) {
+        var $this = this;
+        return new Promise(function(resolve, reject) {
+            fs.readFile(fileName, function(err, data) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                var xml = data.toString();
+                var strings = [];
+                for(var i = 0; i < $this.paramSource.length; i++) {
+                    var regex = new RegExp($this.format(regexStringByName, $this.paramSource[i]), regexModifierGlobal);
+                    var matches = regex.exec(xml);
+                    if (matches) {
+                        strings.push(matches[1]);
+                    }
+                }
+                if (strings.length > 1) {
+                    var regex = new RegExp($this.format(regexStringByName, $this.paramTarget), regexModifierGlobal);
+                    var matches = regex.exec(xml);
+                    if (matches) {
+                        var stringElement = matches[0];
+                        stringElement = stringElement.replace(">" + matches[1] + "</", ">" + strings.join($this.paramSeparator) + "</");
+                        xml = xml.replace(regex, stringElement);
+                    } else {
+                        var stringElement = "<string name=\"" + $this.paramTarget + "\">" + strings.join($this.paramSeparator) + "</string>\n</resources>";
+                        xml = xml.replace(regexCloseResources, stringElement.padStart(stringElement.length + $this.identationSpaces));
                     }
                     fs.writeFile(fileName, xml, function (err) {
                         if (err) {
@@ -293,6 +357,12 @@ module.exports = class AndroidXmlChecker {
                 this.exec(this.paramAction,
                     this.format('Clone string with id "{0}".', this.paramSource),
                     'Cloned {0} strings.',
+                    'Finished with error: {0}');
+                break;
+            case 'join':
+                this.exec(this.paramAction,
+                    this.format('Join strings with ids "{0}" into the string with id "{1}".', this.paramSource.join(','), this.paramTarget),
+                    'Joined {0} strings.',
                     'Finished with error: {0}');
                 break;
             default:
