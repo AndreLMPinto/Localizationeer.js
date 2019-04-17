@@ -58,8 +58,11 @@ module.exports = class ExcelToAndroid {
                 }
             }
 
-            Promise.all(promises).then(function () {
-                console.log('Finished');
+            Promise.all(promises).then(function (values) {
+                var sum = values.reduce(function(total, number) { 
+                    return total + number;
+                });
+                console.log('Finished. Files changed: ' + sum + ' of ' + values.length);
             }).catch(function (err) {
                 console.log('Finished with error ' + err);
             });
@@ -107,11 +110,11 @@ module.exports = class ExcelToAndroid {
                             return;
                         }
                         console.log(languageAndCode + ": " + changes);
-                        resolve();
+                        resolve(1);
                     });
                 } else {
                     console.log(languageAndCode + ": NONE");
-                    resolve();
+                    resolve(0);
                 }
             });
         });
