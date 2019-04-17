@@ -15,7 +15,15 @@ module.exports = class ExcelFileReader {
     }
 
     sanityze(text) {
-        return text.trim().replace(/\'/g, "\\\'").replace(/"|"/g, "\\\"").replace(/'|'/g, "\\\'");
+        // left double quotation mark \u201c
+        // right double quotation mark \u201d
+        // double prime \u2033
+
+        // left single quotation mark \u2018
+        // right single quotation mark \u2019
+        // single high-reversed-9 quotation mark \u201b
+        // prime \u2032
+        return text.trim().replace(/\'|\u2018|\u2019|\u201b|\u2032/g, "\\\'").replace(/\"|\u201c|\u201d|\u2033/g, "\\\"");
     }
 
     validate(options) {
