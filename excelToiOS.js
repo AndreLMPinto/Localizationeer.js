@@ -15,10 +15,6 @@ module.exports = class ExcelToiOS {
         this.identationSpaces = 4;
     }
 
-    sanityze(text) {
-        return text.trim().replace(/\'/g, "\\\'");
-    }
-
     validate(options) {
         if (options.identationSpaces !== undefined) {
             this.identationSpaces = options.identationSpaces;
