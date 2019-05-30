@@ -68,25 +68,6 @@ module.exports = class ExcelToiOS {
         });
     }
 
-    findAndReplaceInXliff(parsedXliff, id, value) {
-        let resources = parsedXliff.resources;
-        let resourcesKeys = Object.keys(resources);
-        for (var resourcesKeyIndex in resourcesKeys) {
-            let resourceKey = resourcesKeys[resourcesKeyIndex];
-            let resource = resources[resourceKey];
-            let transUnitKeys = Object.keys(resource);
-            for (var transUnitKeyIndex in transUnitKeys) {
-                let transUnitKey = transUnitKeys[transUnitKeyIndex];
-                let transUnit = resource[transUnitKey];
-                if (transUnit.source === id && transUnit.target !== value) {
-                    transUnit.target = value;
-                    return 1;
-                }
-            }
-        }
-        return 0;
-    }
-
     parseStringFormatting(value) {
         var regex = new RegExp("(\\%\\d\\$s)|(\\%s)","g");
         let matches = value.match(regex);
@@ -124,30 +105,39 @@ module.exports = class ExcelToiOS {
                 }
                 var xliff = data.toString();
                 try {
-                    let parsedXliff = xliff12ToJs(xliff);
-
                     var changes = 0;
                     for (var id in values) {
                         let parsedValue = $this.parseStringFormatting(values[id]);
                         let parsedId = $this.parseStringFormatting(id);
-                        changes += $this.findAndReplaceInXliff(parsedXliff, parsedId, parsedValue);
+                        
+                        try {
+                            var regex = new RegExp("\<source\>" + parsedId.trim() + "\<\/source\>([^\>]*\<target\>([\\s\\S]*?)\<\/target\>)?", "g");
+                                    var matches = regex.exec(xliff);
+                                    if (matches) {
+                                        var stringElement = matches[0];
+                                        if (matches[1] === undefined) {
+                                            stringElement = stringElement.replace("</source>", "</source>\n<target>"+parsedValue+"</target>");
+                                            xliff = xliff.replace(regex, stringElement);
+                                            changes++;
+                                        } else if (matches[2] != parsedValue) {
+                                            stringElement = stringElement.replace(">" + matches[1] + "</", ">" + parsedValue + "</");
+                                            xliff = xliff.replace(regex, stringElement);
+                                            changes++;
+                                        } 
+                                    }
+                        } catch (err) {
+                            console.log('regex error' + err);
+                        }
                     }
                     if (changes) {
-                        jsToXliff12(parsedXliff, {}, function (parseXliffError, modifiedXliff) {
-                            if (parseXliffError) {
-                                console.log(parseXliffError);
-                                reject(parseXliffError);
+                        fs.writeFile(fileName, xliff, function (err) {
+                            if (err) {
+                                console.log(err);
+                                reject(err);
                                 return;
                             }
-                            fs.writeFile(fileName, modifiedXliff, function (err) {
-                                if (err) {
-                                    console.log(err);
-                                    reject(err);
-                                    return;
-                                }
-                                console.log(languageAndCode + ": " + changes);
-                                resolve();
-                            });
+                            console.log(languageAndCode + ": " + changes);
+                            resolve();
                         });
                         
                     } else {
