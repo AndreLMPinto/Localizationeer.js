@@ -23,11 +23,14 @@ module.exports = class ExcelFileReader {
         // right single quotation mark \u2019
         // single high-reversed-9 quotation mark \u201b
         // prime \u2032
+
+        // replace lonely & with &amp;
+        // ignores &amp; &lt; and so
         return text.trim()
             .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, "\\\'")
             .replace(/\"|\u201c|\u201d|\u2033/g, "\\\"")
             .replace(/\r\n/g, "\\n")
-            .replace(/&\s/g, "&amp; ");
+            .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
     }
 
     validate(options) {
