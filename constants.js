@@ -1,3 +1,8 @@
+exports.android = "android";
+exports.ios = "ios";
+exports.XLIFF_SUFFIX = '.xliff';
+exports.XCLOC_SUFFIX = '.xcloc';
+
 exports.androidLanguageToCode = {
     "English": [undefined],
     "Japanese": ["ja"],

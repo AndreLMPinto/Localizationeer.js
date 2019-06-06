@@ -25,6 +25,7 @@ const ExcelToAndroid = require('./excelToAndroid.js');
 const AndroidXmlChecker = require('./androidXmlChecker.js');
 const ExcelToiOS = require('./excelToiOS');
 const ExportXliff = require('./exportXliffFromXcode');
+const IosToExcel = require('./iOSToExcel');
 
 var options = {
     operation: 'androidCheck',
@@ -53,6 +54,7 @@ if (process.argv.length < 3) {
         + '\nor, when properly installed: loca <args>'
         + '\n-operation=?             excel2android'
         + '\n                         excel2ios'
+        + '\n                         ios2excel'
         + '\n                         exportXliff'
         + '\n                         androidCheck (default)'
         + '\n                         androidTools'
@@ -112,4 +114,8 @@ if(options.operation == 'excel2android') {
 } else if (options.operation == 'exportXliff') {
     console.log('Export Xliff files from Xcode');
     ExportXliff.exportXliffFromXcode(options);
+} else if (options.operation == 'ios2excel') {
+    console.log('iOS xliff files to Excel');
+    let iOS2e = new IosToExcel();
+    iOS2e.readExcelAndCompleteWithIosValues(options);
 }

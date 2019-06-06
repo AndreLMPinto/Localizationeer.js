@@ -5,13 +5,14 @@ var fs = require('fs');
 var Path = require('path');
 
 //This will read excel and send the values extracted through the callback
-module.exports = class ExcelFileReader {
+module.exports = class ExcelFileHandler {
 
     constructor() {
         this.idColumnIndex = 1;
         this.englishColumnIndex = 2;
         this.excelFileName = undefined;
         this.languageCodesPlatform = undefined;
+        this.keepEmptyValues = false;
     }
 
     sanityze(text) {
@@ -58,20 +59,94 @@ module.exports = class ExcelFileReader {
             return false;
         }
 
+        if (options.keepEmptyValues) {
+            this.keepEmptyValues = options.keepEmptyValues;
+        }
+
         return true;
     }
 
     mapLanguageToCodes(language) {
-        if (this.languageCodesPlatform === 'android') {
+        if (this.languageCodesPlatform === constants.android) {
             return constants.androidLanguageToCode[language];
         }
-        if (this.languageCodesPlatform === 'ios') {
+        if (this.languageCodesPlatform === constants.ios) {
             return constants.iosLanguageToCode[language];
         }
 
         return null;
     }
 
+    // writes a list of excelLanguageData into the localization excel file
+    // callback returns the file name of the localization excel file
+    writeExcelLanguageData(options, list, callback) {
+        var $this = this;
+        if (!$this.validate(options)) {
+            return;
+        }
+
+        var workbook = new Excel.Workbook();
+        workbook.xlsx.readFile($this.excelFileName)
+        .then(function() {
+            var worksheet = workbook.worksheets[0];
+            var totalRows = worksheet.rowCount;
+            var totalCols = worksheet.columnCount;
+            for (var index in list) {
+                var item = list[index];
+                var col = $this.getLanguageColumn(worksheet, item.language);
+                for (var id in item.values) {
+                    var row = $this.getIdRow(worksheet, id);
+                    if (col && row && item.values[id]) {
+                        worksheet.getCell(row, col).value = item.values[id];
+                    }
+                }
+            }
+            var fileName = $this.createNewFileName($this.excelFileName);
+            workbook.xlsx.writeFile(fileName)
+            .then(function(){
+                callback(null, fileName);
+            })
+            .catch(function(err){
+                callback(err);
+            });
+        })
+        .catch(function(err){
+            callback(err);
+        });
+    }
+
+    createNewFileName(fileName) {
+        var count = 0;
+        var path;
+        do {
+            count++;
+            path = fileName.replace('.xlsx', '_' + count + '.xlsx');
+        } while (fs.existsSync(path))
+        return path;
+    }
+
+    getIdRow(worksheet, id) {
+        var totalRows = worksheet.rowCount;
+        for (var row = 1; row < totalRows; row++) {
+            if (worksheet.getCell(row, this.idColumnIndex).text == id) {
+                return row;
+            }
+        }
+        return 0;
+    }
+
+    getLanguageColumn(worksheet, language) {
+        var totalCols = worksheet.columnCount;
+        for (var col = 1; col < totalCols; col++) {
+            if (worksheet.getCell(1, col).text == language) {
+                return col;
+            }
+        }
+        return 0;
+    }
+
+    // reads the localization excel file into a list of excelLanguageData
+    // callback returns the list of excelLanguageData
     readExcelLanguageData(options, callback) {
         var $this = this;
         if (!$this.validate(options)) {
@@ -125,6 +200,8 @@ module.exports = class ExcelFileReader {
                                 var value = $this.sanityze(worksheet.getCell(row, col).text);
                                 if (value) {
                                     values[id] = value;
+                                } else if ($this.keepEmptyValues) {
+                                    values[id] = undefined;
                                 }
                             }
                         }
