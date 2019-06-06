@@ -70,6 +70,18 @@ To inform the number of white spaces used for xml indentation use
 - [x] List the changes.
 - [x] Configurable column index for string in English to be used as index (use the same as string id).
 
+## iOS to Excel
+- The input file is an Excel, as in example folder.
+- First line with the language names.
+- First column is for string ids (options).
+- Second column is for strings in English (for iOS the text in English is the id).
+- You should put in the second column the strings in English that you want to leverage the translations.
+- You should provide the xliff files.
+- The process will:
+  1. Get the ids (strings in English) from the Excel file;
+  2. Look into the xliffs for their translations.
+  3. Create a copy of the input Excel file, but with the translations found in the xliffs.
+
 ## Check Android XML files
 - [x] List missing translations: string id exists for English but not for one or more of the other languages.
 - [x] List issues on formattable strings: string in English has formatting placeholders (%s, %1$s, etc) but not for one or more of the other languages.

@@ -1,22 +1,16 @@
 const ExcelFileHandler = require('./excel/excelFileHandler');
+const ExcelLanguageData = require('./excel/excelLanguageData');
 let excelFileHandler = new ExcelFileHandler();
 const constants = require('./constants');
 var Path = require('path');
 var fs = require('fs');
-const xliff12ToJs = require('xliff/xliff12ToJs');
-const jsToXliff12 = require('xliff/jsToXliff12');
 
-// The following code is based on the analogous class from the C# version of this project.
-module.exports = class ExcelToiOS {
+module.exports = class IosToExcel {
     constructor() {
         this.xmlsFolderName = undefined;
-        this.identationSpaces = 4;
     }
 
     validate(options) {
-        if (options.identationSpaces !== undefined) {
-            this.identationSpaces = options.identationSpaces;
-        }
         if (options.xmlsFolderName !== undefined) {
             this.xmlsFolderName = options.xmlsFolderName;
         }
@@ -28,8 +22,8 @@ module.exports = class ExcelToiOS {
 
         return true;
     }
-
-    readExcelAndApplyNewValues(options) {
+    
+    readExcelAndCompleteWithIosValues(options) {
         var $this = this;
         if (!$this.validate(options)) {
             return;
@@ -38,8 +32,9 @@ module.exports = class ExcelToiOS {
         var promises = [];
         options.languageCodesPlatform = constants.ios;
         options.idColumnIndex = options.englishColumnIndex;
+        options.keepEmptyValues = true;
 
-        excelFileHandler.readExcelLanguageData(options, function (err, results) {
+        excelFileHandler.readExcelLanguageData(options, function(err, results) {
             if (err) {
                 console.log(err);
                 return;
@@ -52,14 +47,20 @@ module.exports = class ExcelToiOS {
                     for (var index in excelLanguageData.languageCodes) {
                         var code = excelLanguageData.languageCodes[index];
                         var fileName = Path.join($this.xmlsFolderName, (code ? code : ""));
-                        var languageAndCode = language + (code ? " (" + code + ")" : "");
-                        promises.push($this.setValuesInXml(languageAndCode, excelLanguageData.values, fileName, code));
+                        promises.push($this.getValuesFromXml(language, excelLanguageData.values, fileName, code));
                     }
                 }
             }
 
-            Promise.all(promises).then(function () {
-                console.log('Finished');
+            Promise.all(promises).then(function(values) {
+                excelFileHandler.writeExcelLanguageData(options, values,
+                    function(err, fileName) {
+                        if(err) {
+                            console.log('Error ' + err)
+                        } else {
+                            console.log('Saved to ' + fileName);
+                        }
+                    });
             }).catch(function (err) {
                 console.log('Finished with error ' + err);
             });
@@ -67,20 +68,27 @@ module.exports = class ExcelToiOS {
     }
 
     parseStringFormatting(value) {
-        var regex = new RegExp("(\\%\\d\\$s)|(\\%s)","g");
-        let matches = value.match(regex);
-        if (matches) {
-            for (var matchIndex in matches) {
-                if (!isNaN(matchIndex) && matches[matchIndex]) {
-                    let match = matches[matchIndex].replace('s','@');
-                    value = value.replace(matches[matchIndex], match);
+        if (value) {
+            var regex = new RegExp("(\\%\\d\\$s)|(\\%s)","g");
+            let matches = value.match(regex);
+            if (matches) {
+                for (var matchIndex in matches) {
+                    if (!isNaN(matchIndex) && matches[matchIndex]) {
+                        let match = matches[matchIndex].replace('s','@');
+                        value = value.replace(matches[matchIndex], match);
+                    }
                 }
             }
+            value = value
+            .replace('?', '\\?')
+            .replace('.', '\\.')
+
         }
         return value;
     }
 
-    setValuesInXml(languageAndCode, values, fileName, code) {
+    getValuesFromXml(language, values, fileName, code) {
+        var languageAndCode = language + (code ? " (" + code + ")" : "");
         var $this = this;
         return new Promise(function (resolve, reject) {
             if (!fs.existsSync(fileName + constants.XLIFF_SUFFIX)) {
@@ -94,7 +102,7 @@ module.exports = class ExcelToiOS {
             } else {
                 fileName = fileName + constants.XLIFF_SUFFIX;
             }
-            
+
             fs.readFile(fileName, function (err, data) {
                 if (err) {
                     console.log(err);
@@ -103,45 +111,31 @@ module.exports = class ExcelToiOS {
                 }
                 var xliff = data.toString();
                 try {
-                    var changes = 0;
+                    var count = 0;
                     for (var id in values) {
-                        let parsedValue = $this.parseStringFormatting(values[id]);
                         let parsedId = $this.parseStringFormatting(id);
-                        
                         try {
                             var regex = new RegExp("\<source\>" + parsedId.trim() + "\<\/source\>([^\>]*\<target\>([\\s\\S]*?)\<\/target\>)?", "g");
                             var matches = regex.exec(xliff);
                             if (matches) {
                                 var stringElement = matches[0];
                                 if (matches[1] === undefined) {
-                                    stringElement = stringElement.replace("</source>", "</source>\n<target>"+parsedValue+"</target>");
-                                    xliff = xliff.replace(regex, stringElement);
-                                    changes++;
-                                } else if (matches[2] != parsedValue) {
-                                    stringElement = stringElement.replace(">" + matches[1] + "</", ">" + parsedValue + "</");
-                                    xliff = xliff.replace(regex, stringElement);
-                                    changes++;
+                                    values[id] = undefined;
+                                } else if (matches[2]) {
+                                    values[id] = matches[2];
+                                    count++;
                                 } 
                             }
                         } catch (err) {
                             console.log('regex error' + err);
                         }
                     }
-                    if (changes) {
-                        fs.writeFile(fileName, xliff, function (err) {
-                            if (err) {
-                                console.log(err);
-                                reject(err);
-                                return;
-                            }
-                            console.log(languageAndCode + ": " + changes);
-                            resolve();
-                        });
-                        
+                    if (count) {
+                        console.log(languageAndCode + ': ' + count + ' in ' + xliff.length + ' bytes');
                     } else {
-                        console.log(languageAndCode + ": NONE");
-                        resolve();
+                        console.log(languageAndCode + ': ' + xliff.length + ' bytes');
                     }
+                    resolve(new ExcelLanguageData(language, [code], values))
                 } catch (parseError) {
                     console.log(parseError);
                     reject(parseError);
