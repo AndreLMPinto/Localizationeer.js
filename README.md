@@ -73,10 +73,10 @@ To inform the number of white spaces used for xml indentation use
 ## iOS to Excel
 - The input file is an Excel, as in example folder.
 - First line with the language names.
-- First column is for string ids (options).
+- First column is for string ids (optional).
 - Second column is for strings in English (for iOS the text in English is the id).
 - You should put in the second column the strings in English that you want to leverage the translations.
-- You should provide the xliff files.
+- You should provide the xliff files exported from Xcode.
 - The process will:
   1. Get the ids (strings in English) from the Excel file;
   2. Look into the xliffs for their translations.
