@@ -82,7 +82,9 @@ module.exports = class IosToExcel {
             value = value
             .replace('?', '\\?')
             .replace('.', '\\.')
-
+            .replace(/\u2018|\u2019|\u201b|\u2032/g, "\'")
+            .replace(/\u201c|\u201d|\u2033/g, "\"")
+            .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
         }
         return value;
     }
@@ -112,22 +114,23 @@ module.exports = class IosToExcel {
                 var xliff = data.toString();
                 try {
                     var count = 0;
-                    for (var id in values) {
-                        let parsedId = $this.parseStringFormatting(id);
-                        try {
-                            var regex = new RegExp("\<source\>" + parsedId.trim() + "\<\/source\>([^\>]*\<target\>([\\s\\S]*?)\<\/target\>)?", "g");
-                            var matches = regex.exec(xliff);
-                            if (matches) {
-                                var stringElement = matches[0];
-                                if (matches[1] === undefined) {
-                                    values[id] = undefined;
-                                } else if (matches[2]) {
-                                    values[id] = matches[2];
-                                    count++;
-                                } 
+                    if (xliff) {
+                        for (var id in values) {
+                            let parsedId = $this.parseStringFormatting(id);
+                            try {
+                                var regex = new RegExp("\<source\>" + parsedId.trim() + "\<\/source\>([^\>]*\<target\>([\\s\\S]*?)\<\/target\>)?", "gi");
+                                var matches = regex.exec(xliff);
+                                if (matches) {
+                                    if (matches[1] === undefined) {
+                                        values[id] = undefined;
+                                    } else if (matches[2]) {
+                                        values[id] = matches[2];
+                                        count++;
+                                    } 
+                                }
+                            } catch (err) {
+                                console.log('regex error' + err);
                             }
-                        } catch (err) {
-                            console.log('regex error' + err);
                         }
                     }
                     if (count) {

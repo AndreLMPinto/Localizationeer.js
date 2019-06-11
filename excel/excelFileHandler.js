@@ -94,6 +94,9 @@ module.exports = class ExcelFileHandler {
             for (var index in list) {
                 var item = list[index];
                 var col = $this.getLanguageColumn(worksheet, item.language);
+                if (col == $this.englishColumnIndex) {
+                    continue;
+                }
                 for (var id in item.values) {
                     var row = $this.getIdRow(worksheet, id);
                     if (col && row && item.values[id]) {
