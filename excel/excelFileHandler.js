@@ -28,9 +28,12 @@ module.exports = class ExcelFileHandler {
         // replace lonely & with &amp;
         // ignores &amp; &lt; and so
         return text.trim()
-            .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, "\\\'")
-            .replace(/\"|\u201c|\u201d|\u2033/g, "\\\"")
-            .replace(/\r\n/g, "\\n")
+            .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, 
+                        this.languageCodesPlatform && this.languageCodesPlatform === constants.ios ? "'" : "\\\'")
+            .replace(/\"|\u201c|\u201d|\u2033/g, 
+                        this.languageCodesPlatform && this.languageCodesPlatform === constants.ios ? "\\" : "\\\"")
+            .replace(/\r\n/g, 
+                        this.languageCodesPlatform && this.languageCodesPlatform === constants.ios ? "\n" : "\\n")
             .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
     }
 
