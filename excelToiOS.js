@@ -3,8 +3,6 @@ let excelFileHandler = new ExcelFileHandler();
 const constants = require('./constants');
 var Path = require('path');
 var fs = require('fs');
-const xliff12ToJs = require('xliff/xliff12ToJs');
-const jsToXliff12 = require('xliff/jsToXliff12');
 
 // The following code is based on the analogous class from the C# version of this project.
 module.exports = class ExcelToiOS {
@@ -70,14 +68,37 @@ module.exports = class ExcelToiOS {
         var regex = new RegExp("(\\%\\d\\$s)|(\\%s)","g");
         let matches = value.match(regex);
         if (matches) {
+            var substitutionIndex = 0;
             for (var matchIndex in matches) {
                 if (!isNaN(matchIndex) && matches[matchIndex]) {
-                    let match = matches[matchIndex].replace('s','@');
+                    var match;
+                    
+                    if (matches.length > 1) {
+                        substitutionIndex++;
+                        match = matches[matchIndex].replace(regex,'%'+substitutionIndex+'$@');
+                    } else {
+                        match = matches[matchIndex].replace(regex,'%@');
+                    }
+                    
                     value = value.replace(matches[matchIndex], match);
                 }
             }
         }
         return value;
+    }
+
+    sanytizeValue(value) {
+        return value
+            .replace(/\\n/g,"\n");
+    }
+
+    sanytizeId(value) {
+        return value
+            .replace(/\(/g,"\\(")
+            .replace(/\)/g,"\\)")
+            .replace(/\n/g,"\\n")
+            .replace(/\?/g,"\\?")
+            .replace(/\$/g,"\\$");
     }
 
     setValuesInXml(languageAndCode, values, fileName, code) {
@@ -105,9 +126,11 @@ module.exports = class ExcelToiOS {
                 try {
                     var changes = 0;
                     for (var id in values) {
-                        let parsedValue = $this.parseStringFormatting(values[id]);
-                        let parsedId = $this.parseStringFormatting(id);
+                        console.log("Raw id " + id);
+                        let parsedValue = $this.sanytizeValue($this.parseStringFormatting(values[id]));
                         
+                        let parsedId = $this.sanytizeId($this.parseStringFormatting(id));
+                        console.log("Parsed id " + parsedId);
                         try {
                             var regex = new RegExp("\<source\>" + parsedId.trim() + "\<\/source\>([^\>]*\<target\>([\\s\\S]*?)\<\/target\>)?", "g");
                             var matches = regex.exec(xliff);
@@ -118,10 +141,11 @@ module.exports = class ExcelToiOS {
                                     xliff = xliff.replace(regex, stringElement);
                                     changes++;
                                 } else if (matches[2] != parsedValue) {
-                                    stringElement = stringElement.replace(">" + matches[1] + "</", ">" + parsedValue + "</");
+                                    stringElement = stringElement.replace(">" + matches[2] + "</", ">" + parsedValue + "</");
                                     xliff = xliff.replace(regex, stringElement);
                                     changes++;
                                 } 
+                                console.log("Element changed: " + stringElement);
                             }
                         } catch (err) {
                             console.log('regex error' + err);

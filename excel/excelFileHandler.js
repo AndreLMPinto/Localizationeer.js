@@ -27,13 +27,16 @@ module.exports = class ExcelFileHandler {
 
         // replace lonely & with &amp;
         // ignores &amp; &lt; and so
-        return text.trim()
-            .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, 
-                        this.languageCodesPlatform && this.languageCodesPlatform === constants.ios ? "'" : "\\\'")
-            .replace(/\"|\u201c|\u201d|\u2033/g, 
-                        this.languageCodesPlatform && this.languageCodesPlatform === constants.ios ? "\\" : "\\\"")
-            .replace(/\r\n/g, 
-                        this.languageCodesPlatform && this.languageCodesPlatform === constants.ios ? "\n" : "\\n")
+        return this.languageCodesPlatform && this.languageCodesPlatform === constants.ios 
+        ? 
+                text.trim() 
+                .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
+                .replace(/\r\n/g, "\n")
+                :
+                text.trim()
+            .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, "\\\'")
+            .replace(/\"|\u201c|\u201d|\u2033/g, "\\\"")
+            .replace(/\r\n/g, "\\n")
             .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
     }
 
@@ -198,7 +201,7 @@ module.exports = class ExcelFileHandler {
                         var values = {};
                         // read all strings for one language from the excel file
                         for (var row = 2; row <= totalRows; row++) {
-                            var id = worksheet.getCell(row, $this.idColumnIndex).text;
+                            var id = $this.sanityze(worksheet.getCell(row, $this.idColumnIndex).text);
                             if (id) {
                                 if (values[id]) {
                                     throw new Error('Duplicate key detected "' + id + '". Please review your Excel file.')
