@@ -14,6 +14,13 @@
 // -- english column index (1 based, default 2)
 // -- comparison threshold (0 to 100)
 
+// - android files to excel
+// -- the folder which contains the anrdoid xml files
+// -- the excel file with string ids and english strings to look for in the android files
+// -- id column index (1 based, default 1)
+// -- english column index (1 based, default 2)
+// -- comparison threshold (0 to 100)
+
 // - check android xml files
 // -- the app/src/main/res folder which contains the values*/*.xml files
 
@@ -27,6 +34,7 @@ const ExcelToiOS = require('./excelToiOS');
 const ExportXliff = require('./exportXliffFromXcode');
 const ImportXliff = require('./importXliffFromXcode');
 const IosToExcel = require('./iOSToExcel');
+const AndroidToExcel = require('./androidToExcel');
 
 var options = {
     operation: 'androidCheck',
@@ -56,6 +64,7 @@ if (process.argv.length < 3) {
         + '\n-operation=?             excel2android'
         + '\n                         excel2ios'
         + '\n                         ios2excel'
+        + '\n                         android2excel'
         + '\n                         exportXliff'
         + '\n                         androidCheck (default)'
         + '\n                         androidTools'
@@ -122,4 +131,8 @@ if(options.operation == 'excel2android') {
     console.log('iOS xliff files to Excel');
     let iOS2e = new IosToExcel();
     iOS2e.readExcelAndCompleteWithIosValues(options);
+} else if (options.operation == 'android2excel') {
+    console.log('Android xml files to Excel');
+    let android2E = new AndroidToExcel();
+    android2E.readExcelAndCompleteWithAndroidValues(options);
 }

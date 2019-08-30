@@ -143,7 +143,7 @@ module.exports = class ExcelFileHandler {
 
     getLanguageColumn(worksheet, language) {
         var totalCols = worksheet.columnCount;
-        for (var col = 1; col < totalCols; col++) {
+        for (var col = 1; col <= totalCols; col++) {
             if (worksheet.getCell(1, col).text == language) {
                 return col;
             }
