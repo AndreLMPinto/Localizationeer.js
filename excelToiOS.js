@@ -89,6 +89,7 @@ module.exports = class ExcelToiOS {
 
     sanytizeValue(value) {
         return value
+            .replace(/\\"/g,"\"")
             .replace(/\\n/g,"\n");
     }
 
