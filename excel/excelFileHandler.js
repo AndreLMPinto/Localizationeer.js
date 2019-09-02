@@ -136,7 +136,7 @@ module.exports = class ExcelFileHandler {
 
     getIdRow(worksheet, id) {
         var totalRows = worksheet.rowCount;
-        for (var row = 1; row < totalRows; row++) {
+        for (var row = 1; row <= totalRows; row++) {
             if (worksheet.getCell(row, this.idColumnIndex).text == id) {
                 return row;
             }

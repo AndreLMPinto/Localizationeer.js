@@ -67,28 +67,6 @@ module.exports = class AndroidToExcel {
         });
     }
 
-    parseStringFormatting(value) {
-        if (value) {
-            var regex = new RegExp("(\\%\\d\\$s)|(\\%s)","g");
-            let matches = value.match(regex);
-            if (matches) {
-                for (var matchIndex in matches) {
-                    if (!isNaN(matchIndex) && matches[matchIndex]) {
-                        let match = matches[matchIndex].replace('s','@');
-                        value = value.replace(matches[matchIndex], match);
-                    }
-                }
-            }
-            value = value
-            .replace('?', '\\?')
-            .replace('.', '\\.')
-            .replace(/\u2018|\u2019|\u201b|\u2032/g, "\'")
-            .replace(/\u201c|\u201d|\u2033/g, "\"")
-            .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
-        }
-        return value;
-    }
-
     getValuesFromXml(language, values, fileName, code) {
         var languageAndCode = language + (code ? " (" + code + ")" : "");
         var $this = this;
