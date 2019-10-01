@@ -66,6 +66,7 @@ if (process.argv.length < 3) {
         + '\n                         ios2excel'
         + '\n                         android2excel'
         + '\n                         exportXliff'
+        + '\n                         importXliff'
         + '\n                         androidCheck (default)'
         + '\n                         androidTools'
         + '\n-paramAction=?           delete'

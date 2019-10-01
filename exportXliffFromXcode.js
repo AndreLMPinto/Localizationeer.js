@@ -8,7 +8,7 @@ xcodebuild
 -project MyApp/MyApp.xcodeproj 
 -exportLanguage pt-BR
 */
-function runXcodeBuildExport(langCode, options) {
+async function runXcodeBuildExport(langCode, options) {
     return new Promise(function (resolve, reject) {
         console.log('Running xcodebuild -exportLocalizations for ' + langCode);
         let xcodebuildSpawn = spawn('xcodebuild', [
@@ -41,7 +41,7 @@ options = {
     xcodeProjPath: '/Path/to/where/the/xcodeproj/is/App.xcodeproj'
 }
 */
-module.exports.exportXliffFromXcode = function (options) {
+module.exports.exportXliffFromXcode = async function (options) {
     console.log('Exporting localization from ' + options.xcodeProjPath);
     console.log('Exporting to folder: ' + options.localizationPath);
 
@@ -52,7 +52,7 @@ module.exports.exportXliffFromXcode = function (options) {
         let languageCodes = constants.iosLanguageToCode[languagesKeys[languagesKeyIndex]];
         for (let langCodeIndex in languageCodes) {
             let langCode = languageCodes[langCodeIndex];
-            promises.push(runXcodeBuildExport(langCode, options));
+            await runXcodeBuildExport(langCode, options);
         }
     }
 

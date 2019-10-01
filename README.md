@@ -82,6 +82,16 @@ To inform the number of white spaces used for xml indentation use
   2. Look into the xliffs for their translations.
   3. Create a copy of the input Excel file, but with the translations found in the xliffs.
 
+## Android to Excel
+- The input file is an Excel, as in example folder.
+- First line with the language names.
+- First column is for string ids.
+- Second column is for strings in English.
+- The process will:
+  1. Get the ids (strings in English) from the Excel file;
+  2. Look into the android strings xml files for their translations.
+  3. Create a copy of the input Excel file, but with the translations found in the android strings files.
+
 ## Check Android XML files
 - [x] List missing translations: string id exists for English but not for one or more of the other languages.
 - [x] List issues on formattable strings: string in English has formatting placeholders (%s, %1$s, etc) but not for one or more of the other languages.
