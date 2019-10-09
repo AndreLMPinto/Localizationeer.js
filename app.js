@@ -82,7 +82,7 @@ if (process.argv.length < 3) {
         + '\n-excelFileName=?         /path/to/file.xls (or file.csv with ";" as separators)'
         + '\n-xmlsFolderName=?        /app/repo/app/src/main/res'
         + '\n-idColumnIndex=?         default to 1'
-        + '\n-idEnglishColumnIndex=?  default to 2'
+        + '\n-englishColumnIndex=?  default to 2'
         + '\n-indentationSpaces=?     default to 4'
         + '\n-missingStrings=?        default to true'
         + '\n-formatIssues=?          default to true'
