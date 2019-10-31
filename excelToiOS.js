@@ -128,11 +128,11 @@ module.exports = class ExcelToiOS {
                 try {
                     var changes = 0;
                     for (var id in values) {
-                        console.log("Raw id " + id);
+                        
                         let parsedValue = $this.sanytizeValue($this.parseStringFormatting(values[id]));
                         
                         let parsedId = $this.sanytizeId($this.parseStringFormatting(id));
-                        console.log("Parsed id " + parsedId);
+                        
                         try {
                             var regex = new RegExp("\<source\>" + parsedId.trim() + "\<\/source\>([^\>]*\<target\>([\\s\\S]*?)\<\/target\>)?", "g");
                             var matches = regex.exec(xliff);
@@ -148,6 +148,11 @@ module.exports = class ExcelToiOS {
                                     changes++;
                                 } 
                                 console.log("Element changed: " + stringElement);
+                            } else {
+                                console.log("### Id not found ###")
+                                console.log("Raw id " + id);
+                                console.log("Parsed id " + parsedId);
+                                console.log("####################")
                             }
                         } catch (err) {
                             console.log('regex error' + err);
