@@ -80,11 +80,18 @@ module.exports = class IosToExcel {
                 }
             }
             value = value
-            .replace('?', '\\?')
-            .replace('.', '\\.')
-            .replace(/\u2018|\u2019|\u201b|\u2032/g, "\'")
-            .replace(/\u201c|\u201d|\u2033/g, "\"")
-            .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
+            // characters used in regular expression must be escaped
+            // TODO: might need to add more as it goes []{}*+|^$\
+            .replace(/\?/g, '\\?')
+            .replace(/\./g, '\\.')
+            .replace(/\)/g, '\\)')
+            .replace(/\(/g, '\\(')
+            // leave the quotations untouched
+            //.replace(/\u2018|\u2019|\u201b|\u2032/g, "\'")
+            //.replace(/\u201c|\u201d|\u2033/g, "\"")
+            // leave the ampersand untouched
+            // TODO: need to test this to confirm
+            //.replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
         }
         return value;
     }
