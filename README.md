@@ -45,7 +45,7 @@ To inform the column index for the string id use
 > -idColumnIndex=1
 
 To inform the column index for the text in English use
-> -idEnglishColumnIndex=2
+> -englishColumnIndex=2
 
 To inform the number of white spaces used for xml indentation use
 > -indentationSpaces=4
