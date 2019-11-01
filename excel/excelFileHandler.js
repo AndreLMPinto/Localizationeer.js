@@ -13,6 +13,7 @@ module.exports = class ExcelFileHandler {
         this.excelFileName = undefined;
         this.languageCodesPlatform = undefined;
         this.keepEmptyValues = false;
+        this.includeEnglish = false;
     }
 
     sanityze(text) {
@@ -27,17 +28,18 @@ module.exports = class ExcelFileHandler {
 
         // replace lonely & with &amp;
         // ignores &amp; &lt; and so
-        return this.languageCodesPlatform && this.languageCodesPlatform === constants.ios 
-        ? 
-                text.trim() 
+
+        if (this.languageCodesPlatform && this.languageCodesPlatform === constants.ios) {
+            return text.trim()
                 .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
-                .replace(/\r\n/g, "\n")
-                :
-                text.trim()
-            .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, "\\\'")
-            .replace(/\"|\u201c|\u201d|\u2033/g, "\\\"")
-            .replace(/\r\n/g, "\\n")
-            .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
+                .replace(/\r\n/g, "\n");
+        } else {
+            return text.trim()
+                .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, "\\\'")
+                .replace(/\"|\u201c|\u201d|\u2033/g, "\\\"")
+                .replace(/\r\n/g, "\\n")
+                .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
+        }
     }
 
     validate(options) {
@@ -67,6 +69,10 @@ module.exports = class ExcelFileHandler {
 
         if (options.keepEmptyValues) {
             this.keepEmptyValues = options.keepEmptyValues;
+        }
+
+        if (options.includeEnglish) {
+            this.includeEnglish = options.includeEnglish;
         }
 
         return true;
@@ -100,7 +106,7 @@ module.exports = class ExcelFileHandler {
             for (var index in list) {
                 var item = list[index];
                 var col = $this.getLanguageColumn(worksheet, item.language);
-                if (col == $this.englishColumnIndex) {
+                if (col == $this.englishColumnIndex && !$this.includeEnglish) {
                     continue;
                 }
                 for (var id in item.values) {
