@@ -4,7 +4,9 @@ The localizationeer was originally intended to be a tool to import localization 
 Current functionalities:
 - Import localization strings from one Excel file to Android XML string files
 - Import localization strings from one Excel file to iOS XLIFF files
-- Check for inconsistencies on Android XML string files, looking for missing translations and issues on formattable strings
+- Export localization strings from iOS XLIFF files to one Excel file
+- Export localization strings from Android XML string files to one Excel file
+- Check for inconsistencies on Android XML string files, looking for missing translations and issues on formattable strings, remove, clone or join strings
 
 ## Installation
 Install Node.js and you should be good to go.
@@ -18,7 +20,6 @@ After that just run:
 ## Dependencies
 - ExcelJS https://www.npmjs.com/package/exceljs
 - FS https://www.npmjs.com/package/fs
-- XLIFF https://www.npmjs.com/package/xliff
 
 ## Excel to Android
 - The input file is an Excel or CSV. See example folder for the example.xlsx and example.csv input files.
