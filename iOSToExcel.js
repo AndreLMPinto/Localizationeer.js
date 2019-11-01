@@ -67,7 +67,7 @@ module.exports = class IosToExcel {
         });
     }
 
-    parseStringFormatting(value) {
+    sanytizeId(value) {
         if (value) {
             var regex = new RegExp("(\\%\\d\\$s)|(\\%s)","g");
             let matches = value.match(regex);
@@ -80,18 +80,19 @@ module.exports = class IosToExcel {
                 }
             }
             value = value
-            // characters used in regular expression must be escaped
-            // TODO: might need to add more as it goes []{}*+|^$\
-            .replace(/\?/g, '\\?')
-            .replace(/\./g, '\\.')
-            .replace(/\)/g, '\\)')
-            .replace(/\(/g, '\\(')
-            // leave the quotations untouched
-            //.replace(/\u2018|\u2019|\u201b|\u2032/g, "\'")
-            //.replace(/\u201c|\u201d|\u2033/g, "\"")
-            // leave the ampersand untouched
-            // TODO: need to test this to confirm
-            //.replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
+                // characters used in regular expression must be escaped
+                // TODO: might need to add more as it goes []{}*+|^$\
+                .replace(/\?/g, '\\?')
+                .replace(/\./g, '\\.')
+                .replace(/\)/g, '\\)')
+                .replace(/\(/g, '\\(')
+                // leave the quotations untouched
+                //.replace(/\u2018|\u2019|\u201b|\u2032/g, "\'")
+                //.replace(/\u201c|\u201d|\u2033/g, "\"")
+                // leave the ampersand untouched
+                // TODO: need to test this to confirm
+                //.replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
+                .trim();
         }
         return value;
     }
@@ -123,9 +124,9 @@ module.exports = class IosToExcel {
                     var count = 0;
                     if (xliff) {
                         for (var id in values) {
-                            let parsedId = $this.parseStringFormatting(id);
+                            let parsedId = $this.sanytizeId(id);
                             try {
-                                var regex = new RegExp("\<source\>" + parsedId.trim() + "\<\/source\>([^\>]*\<target\>([\\s\\S]*?)\<\/target\>)?", "gi");
+                                var regex = new RegExp("\<source\>" + parsedId + "\<\/source\>([^\>]*\<target\>([\\s\\S]*?)\<\/target\>)?", "gi");
                                 var matches = regex.exec(xliff);
                                 if (matches) {
                                     if (matches[1] === undefined) {
