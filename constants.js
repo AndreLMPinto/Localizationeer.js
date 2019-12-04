@@ -1,5 +1,6 @@
 exports.android = "android";
 exports.ios = "ios";
+exports.google = "google";
 exports.XLIFF_SUFFIX = '.xliff';
 exports.XCLOC_SUFFIX = '.xcloc';
 

@@ -1,3 +1,4 @@
+const constants = require('./constants');
 const ExcelFileHandler = require('./excel/excelFileHandler');
 let excelFileHandler = new ExcelFileHandler();
 var Path = require('path');
@@ -33,7 +34,7 @@ module.exports = class ExcelToAndroid {
         }
 
         var promises = [];
-        options.languageCodesPlatform = 'android';
+        options.languageCodesPlatform = constants.android;
 
         excelFileHandler.readExcelLanguageData(options, function (err, results) {
             if (err) {
