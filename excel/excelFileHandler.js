@@ -29,16 +29,20 @@ module.exports = class ExcelFileHandler {
         // replace lonely & with &amp;
         // ignores &amp; &lt; and so
 
-        if (this.languageCodesPlatform && this.languageCodesPlatform === constants.ios) {
-            return text.trim()
-                .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
-                .replace(/\r\n/g, "\n");
-        } else {
-            return text.trim()
-                .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, "\\\'")
-                .replace(/\"|\u201c|\u201d|\u2033/g, "\\\"")
-                .replace(/\r\n/g, "\\n")
-                .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
+        if (this.languageCodesPlatform) {
+            if (this.languageCodesPlatform === constants.ios) {
+                return text.trim()
+                    .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;")
+                    .replace(/\r\n/g, "\n");
+            } else if (this.languageCodesPlatform === constants.android) {
+                return text.trim()
+                    .replace(/\'|\u2018|\u2019|\u201b|\u2032/g, "\\\'")
+                    .replace(/\"|\u201c|\u201d|\u2033/g, "\\\"")
+                    .replace(/\r\n/g, "\\n")
+                    .replace(/&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
+            } else if (this.languageCodesPlatform === constants.google) {
+                return text.trim();
+            }
         }
     }
 
@@ -81,12 +85,13 @@ module.exports = class ExcelFileHandler {
     mapLanguageToCodes(language) {
         if (this.languageCodesPlatform === constants.android) {
             return constants.androidLanguageToCode[language];
-        }
-        if (this.languageCodesPlatform === constants.ios) {
+        } else if (this.languageCodesPlatform === constants.ios) {
             return constants.iosLanguageToCode[language];
+        } else if (this.languageCodesPlatform === constants.google) {
+            return constants.googleLanguageToCode[language];
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     // writes a list of excelLanguageData into the localization excel file
@@ -192,7 +197,7 @@ module.exports = class ExcelFileHandler {
                 var worksheet = workbook.worksheets[0];
 
                 if (worksheet.getCell(1, $this.englishColumnIndex).text != 'English') {
-                    throw new Error('Incorrect index for "English" column. Please review your Excel file.');
+                    throw new Error('Incorrect index (' + $this.englishColumnIndex + ') for "English" column. Please review your Excel file.');
                 }
 
                 var totalRows = worksheet.rowCount;
