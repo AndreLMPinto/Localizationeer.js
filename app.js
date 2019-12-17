@@ -35,6 +35,7 @@ const ExportXliff = require('./exportXliffFromXcode');
 const ImportXliff = require('./importXliffFromXcode');
 const IosToExcel = require('./iOSToExcel');
 const AndroidToExcel = require('./androidToExcel');
+const TranslateGoogle = require('./translateGoogle');
 
 var options = {
     operation: 'androidCheck',
@@ -137,4 +138,8 @@ if(options.operation == 'excel2android') {
     console.log('Android xml files to Excel');
     let android2E = new AndroidToExcel();
     android2E.readExcelAndCompleteWithAndroidValues(options);
+} else if (options.operation == 'translateGoogle') {
+    console.log('Translate strings using Google');
+    let translateG = new TranslateGoogle();
+    translateG.translate(options);
 }
